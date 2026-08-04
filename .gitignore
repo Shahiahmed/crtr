@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local tournament runtime + raw export
+/data/tournament.json
+/data/employees-raw.csv
