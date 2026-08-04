@@ -8,6 +8,7 @@ import {
 } from "@/lib/auth";
 import {
   buildBracket,
+  createAccessCode,
   getTournament,
   isTeamReady,
   saveTournament,
@@ -22,12 +23,26 @@ export async function GET() {
     return NextResponse.json({ authenticated: false });
   }
 
+  let hasUpdatedLegacyTeams = false;
+
+  for (const team of tournament.teams) {
+    if (!team.accessCode) {
+      team.accessCode = createAccessCode();
+      hasUpdatedLegacyTeams = true;
+    }
+  }
+
+  if (hasUpdatedLegacyTeams) {
+    await saveTournament(tournament);
+  }
+
   return NextResponse.json({
     authenticated: true,
     settings: tournament.settings,
     teams: tournament.teams.map((team) => ({
       ...toPublicTeam(team),
       manageToken: team.manageToken,
+      accessCode: team.accessCode,
     })),
     bracket: tournament.bracket,
   });

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { EmployeePicker } from "@/components/EmployeePicker";
+import { saveCaptainSession } from "@/lib/captain-session";
 import type { Employee } from "@/lib/types";
 
 type CreateMode = "directory" | "manual";
@@ -18,6 +19,8 @@ export default function RegisterPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [manageUrl, setManageUrl] = useState("");
+  const [accessCode, setAccessCode] = useState("");
+  const [createdTeamName, setCreatedTeamName] = useState("");
   const [absoluteManageUrl, setAbsoluteManageUrl] = useState("");
 
   useEffect(() => {
@@ -51,13 +54,31 @@ export default function RegisterPage() {
       const payload = (await response.json()) as {
         error?: string;
         manageUrl?: string;
+        manageToken?: string;
+        accessCode?: string;
+        team?: { name?: string };
       };
 
       if (!response.ok) {
         throw new Error(payload.error || "Не удалось создать команду");
       }
 
-      setManageUrl(payload.manageUrl || "");
+      const nextManageUrl = payload.manageUrl || "";
+      const nextAccessCode = payload.accessCode || "";
+      const nextTeamName = payload.team?.name || teamName;
+
+      if (payload.manageToken && nextManageUrl) {
+        saveCaptainSession({
+          manageToken: payload.manageToken,
+          manageUrl: nextManageUrl,
+          teamName: nextTeamName,
+          accessCode: nextAccessCode,
+        });
+      }
+
+      setCreatedTeamName(nextTeamName);
+      setAccessCode(nextAccessCode);
+      setManageUrl(nextManageUrl);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Ошибка");
     } finally {
@@ -72,19 +93,28 @@ export default function RegisterPage() {
           <h1 className="section__title">Команда создана</h1>
           <div className="success-box">
             <p>
-              Сохрани эту ссылку — только по ней капитан управляет составом. Не публикуй
-              её в общий чат без нужды.
+              <strong>{createdTeamName}</strong> сохранена в этом браузере. Дальше заходи
+              через меню «Моя команда».
             </p>
-            <code>{absoluteManageUrl || manageUrl}</code>
+            <p style={{ marginTop: "0.85rem" }}>Код капитана (запиши!):</p>
+            <code style={{ fontSize: "1.6rem", letterSpacing: "0.2em", textAlign: "center" }}>
+              {accessCode}
+            </code>
+            <p className="field__hint" style={{ marginTop: "0.75rem" }}>
+              Если сменишь телефон/браузер — войди по названию команды + этому коду.
+            </p>
           </div>
           <div className="hero__actions" style={{ marginTop: "1.25rem" }}>
             <Link href={manageUrl} className="button">
               Перейти к управлению
             </Link>
-            <Link href="/teams" className="button button--ghost">
-              К списку команд
+            <Link href="/my-team" className="button button--ghost">
+              Моя команда
             </Link>
           </div>
+          <p className="muted" style={{ marginTop: "1rem", wordBreak: "break-all" }}>
+            Ссылка: {absoluteManageUrl || manageUrl}
+          </p>
         </section>
       </main>
     );
@@ -191,6 +221,13 @@ export default function RegisterPage() {
             {isSubmitting ? "Создаём..." : "Создать команду"}
           </button>
         </form>
+
+        <p className="muted" style={{ marginTop: "1rem" }}>
+          Уже создавал команду?{" "}
+          <Link href="/my-team" style={{ color: "var(--accent-hot)" }}>
+            Войти в «Моя команда»
+          </Link>
+        </p>
       </section>
     </main>
   );

@@ -15,6 +15,7 @@ export type Team = {
   block: string;
   department: string;
   manageToken: string;
+  accessCode: string;
   members: TeamMember[];
   createdAt: string;
 };
@@ -53,7 +54,7 @@ export type Employee = {
   department: string;
 };
 
-export type PublicTeam = Omit<Team, "manageToken"> & {
+export type PublicTeam = Omit<Team, "manageToken" | "accessCode"> & {
   starterCount: number;
   substituteCount: number;
   isReady: boolean;

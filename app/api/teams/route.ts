@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import {
+  createAccessCode,
   createEntityId,
   createManageToken,
   getTournament,
@@ -147,6 +148,7 @@ export async function POST(request: Request) {
       block: blockName,
       department: captain.department,
       manageToken: createManageToken(),
+      accessCode: createAccessCode(),
       members: [captain],
       createdAt: new Date().toISOString(),
     };
@@ -159,6 +161,7 @@ export async function POST(request: Request) {
       team: toPublicTeam(team),
       manageToken: team.manageToken,
       manageUrl: `/manage/${team.manageToken}`,
+      accessCode: team.accessCode,
     });
   } catch (error) {
     const message =

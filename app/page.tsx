@@ -29,8 +29,8 @@ export default async function HomePage() {
               <Link href="/register" className="button">
                 Создать команду
               </Link>
-              <Link href="/teams" className="button button--ghost">
-                Смотреть команды
+              <Link href="/my-team" className="button button--ghost">
+                Моя команда
               </Link>
             </div>
             <div className="hero__sides" aria-hidden="true">

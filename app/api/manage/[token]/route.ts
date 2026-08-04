@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
 import {
+  createAccessCode,
   createEntityId,
-  findTeamByManageToken,
   getStarterMembers,
   getTournament,
   isPersonAlreadyRegistered,
@@ -27,15 +27,24 @@ type AddMemberBody = {
 
 export async function GET(_request: Request, context: RouteContext) {
   const { token } = await context.params;
-  const team = await findTeamByManageToken(token);
+  const tournament = await getTournament();
+  const teamIndex = tournament.teams.findIndex((team) => team.manageToken === token);
 
-  if (!team) {
+  if (teamIndex < 0) {
     return NextResponse.json({ error: "Команда не найдена" }, { status: 404 });
   }
+
+  if (!tournament.teams[teamIndex].accessCode) {
+    tournament.teams[teamIndex].accessCode = createAccessCode();
+    await saveTournament(tournament);
+  }
+
+  const team = tournament.teams[teamIndex];
 
   return NextResponse.json({
     team: toPublicTeam(team),
     manageToken: team.manageToken,
+    accessCode: team.accessCode,
   });
 }
 

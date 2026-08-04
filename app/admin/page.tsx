@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import type { Bracket, PublicTeam, TournamentSettings } from "@/lib/types";
 
-type AdminTeam = PublicTeam & { manageToken: string };
+type AdminTeam = PublicTeam & { manageToken: string; accessCode?: string };
 
 type AdminState = {
   authenticated: boolean;
@@ -186,6 +186,11 @@ export default function AdminPage() {
                 <p>
                   Подтверждено {team.confirmedCount} · Вручную {team.unconfirmedCount}
                 </p>
+                {team.accessCode ? (
+                  <p className="muted" style={{ margin: "0.5rem 0" }}>
+                    Код капитана: <strong>{team.accessCode}</strong>
+                  </p>
+                ) : null}
                 <p className="muted" style={{ margin: "0.5rem 0" }}>
                   <Link href={`/manage/${team.manageToken}`}>Ссылка капитана</Link>
                 </p>

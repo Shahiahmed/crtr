@@ -121,6 +121,10 @@ export function createManageToken(): string {
   return randomBytes(24).toString("hex");
 }
 
+export function createAccessCode(): string {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
 export function createEntityId(prefix: string): string {
   return `${prefix}_${randomUUID().replace(/-/g, "").slice(0, 12)}`;
 }
