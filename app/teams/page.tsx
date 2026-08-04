@@ -23,23 +23,16 @@ function shortName(fullName: string): string {
   return `${surname} ${initials}`;
 }
 
-function shortDepartment(department: string): string {
-  return department
-    .replace(/^Департамент\s+/i, "")
-    .replace(/^Служба\s+/i, "")
-    .replace(/^Офис\s+/i, "");
-}
-
 function roleLabel(role: TeamMember["role"]): string {
   if (role === "captain") {
-    return "кап.";
+    return "Капитан";
   }
 
   if (role === "substitute") {
-    return "зап.";
+    return "Запас";
   }
 
-  return "осн.";
+  return "Основной";
 }
 
 function sortMembers(members: TeamMember[]): TeamMember[] {
@@ -59,7 +52,7 @@ export default async function TeamsPage() {
       <section className="section">
         <h1 className="section__title">Команды турнира</h1>
         <p className="section__text">
-          В одной строке: игрок, роль и его департамент.
+          Зелёный — из справочника. Жёлтый — добавлен вручную.
         </p>
 
         {teams.length === 0 ? (
@@ -68,7 +61,12 @@ export default async function TeamsPage() {
           <div className="teams-table panel">
             <div className="teams-table__head">
               <span>Команда</span>
-              <span>Участники</span>
+              <div className="teams-people__head">
+                <span>Участник</span>
+                <span>Роль</span>
+                <span>Статус</span>
+                <span>Департамент</span>
+              </div>
               <span>Состав</span>
             </div>
             {teams.map((team) => {
@@ -78,7 +76,7 @@ export default async function TeamsPage() {
                 <article key={team.id} className="teams-table__row">
                   <div className="teams-table__team">
                     <strong className="teams-table__name">{team.name}</strong>
-                    {team.block ? <span className="teams-table__block">{team.block}</span> : null}
+                    {team.block ? <span className="teams-table__block">Блок: {team.block}</span> : null}
                   </div>
 
                   <ul className="teams-people">
@@ -92,13 +90,12 @@ export default async function TeamsPage() {
                           </strong>
                           <span className="teams-people__role">{roleLabel(member.role)}</span>
                           <span
-                            className={`teams-people__mark ${member.isConfirmed ? "is-ok" : "is-manual"}`}
-                            title={member.isConfirmed ? "Из справочника" : "Вручную"}
+                            className={`teams-people__status ${member.isConfirmed ? "is-ok" : "is-manual"}`}
                           >
-                            {member.isConfirmed ? "●" : "○"}
+                            {member.isConfirmed ? "Справочник" : "Вручную"}
                           </span>
-                          <span className="teams-people__department" title={member.department}>
-                            {shortDepartment(member.department)}
+                          <span className="teams-people__department">
+                            {member.department}
                           </span>
                         </li>
                       ))
