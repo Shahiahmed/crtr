@@ -12,6 +12,7 @@ export type TeamMember = {
 export type Team = {
   id: string;
   name: string;
+  block: string;
   department: string;
   manageToken: string;
   members: TeamMember[];

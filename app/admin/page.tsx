@@ -181,6 +181,7 @@ export default function AdminPage() {
                     {team.starterCount}/5
                   </span>
                 </div>
+                {team.block ? <p>Блок: {team.block}</p> : null}
                 <p>{team.department}</p>
                 <p>
                   Подтверждено {team.confirmedCount} · Вручную {team.unconfirmedCount}

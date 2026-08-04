@@ -13,6 +13,7 @@ import type { Team, TeamMember } from "@/lib/types";
 
 type CreateTeamBody = {
   teamName?: string;
+  block?: string;
   employeeId?: string;
   manualFullName?: string;
   manualDepartment?: string;
@@ -42,11 +43,19 @@ export async function POST(request: Request) {
 
     const body = (await request.json()) as CreateTeamBody;
     const teamName = body.teamName?.trim() || "";
+    const blockName = body.block?.trim() || "";
     const mode = body.mode || "directory";
 
     if (teamName.length < 2 || teamName.length > 40) {
       return NextResponse.json(
         { error: "Название команды: от 2 до 40 символов" },
+        { status: 400 },
+      );
+    }
+
+    if (blockName.length < 1 || blockName.length > 80) {
+      return NextResponse.json(
+        { error: "Укажите блок (до 80 символов)" },
         { status: 400 },
       );
     }
@@ -135,6 +144,7 @@ export async function POST(request: Request) {
     const team: Team = {
       id: createEntityId("team"),
       name: teamName,
+      block: blockName,
       department: captain.department,
       manageToken: createManageToken(),
       members: [captain],

@@ -1,6 +1,6 @@
 import { getTournament, toPublicTeam } from "@/lib/db";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 5;
 
 function shortName(fullName: string): string {
   const parts = fullName.trim().split(/\s+/);
@@ -57,6 +57,9 @@ export default async function TeamsPage() {
                 <article key={team.id} className="teams-table__row">
                   <div>
                     <strong className="teams-table__name">{team.name}</strong>
+                    {team.block ? (
+                      <p className="teams-table__captain">Блок: {team.block}</p>
+                    ) : null}
                     <p className="teams-table__department">{team.department}</p>
                     {captain ? (
                       <p className="teams-table__captain">

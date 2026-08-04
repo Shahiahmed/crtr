@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { getTournament, toPublicTeam } from "@/lib/db";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 5;
 
 export default async function HomePage() {
   const tournament = await getTournament();
@@ -41,11 +41,13 @@ export default async function HomePage() {
 
           <div className="hero__visual">
             <Image
-              src="/hero.png"
+              src="/hero.webp"
               alt="Terrorists CS2"
-              width={920}
-              height={920}
+              width={1200}
+              height={1044}
               priority
+              sizes="(max-width: 860px) 70vw, 40vw"
+              quality={80}
               className="hero__image"
             />
           </div>
@@ -104,6 +106,7 @@ export default async function HomePage() {
                       {team.starterCount}/5
                     </span>
                   </div>
+                  {team.block ? <p>Блок: {team.block}</p> : null}
                   <p>{team.department}</p>
                   <p>
                     Подтверждено: {team.confirmedCount} · Вручную: {team.unconfirmedCount}

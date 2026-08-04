@@ -1,6 +1,4 @@
-import fs from "fs";
-import path from "path";
-
+import employeesData from "@/data/employees.json";
 import type { Employee } from "@/lib/types";
 
 type EmployeesFile = {
@@ -8,19 +6,14 @@ type EmployeesFile = {
   employees: Employee[];
 };
 
-const EMPLOYEES_PATH = path.join(process.cwd(), "data", "employees.json");
-
-function readEmployeesFile(): EmployeesFile {
-  const rawContent = fs.readFileSync(EMPLOYEES_PATH, "utf8");
-  return JSON.parse(rawContent) as EmployeesFile;
-}
+const employeesFile = employeesData as EmployeesFile;
 
 export function getDepartments(): string[] {
-  return readEmployeesFile().departments;
+  return employeesFile.departments;
 }
 
 export function getEmployees(): Employee[] {
-  return readEmployeesFile().employees;
+  return employeesFile.employees;
 }
 
 export function searchEmployees(query: string, limit = 12): Employee[] {
@@ -30,15 +23,24 @@ export function searchEmployees(query: string, limit = 12): Employee[] {
     return [];
   }
 
-  return getEmployees()
-    .filter((employee) => {
-      const fullName = employee.fullName.toLocaleLowerCase("ru-RU");
-      const department = employee.department.toLocaleLowerCase("ru-RU");
-      return fullName.includes(normalizedQuery) || department.includes(normalizedQuery);
-    })
-    .slice(0, limit);
+  const results: Employee[] = [];
+
+  for (const employee of employeesFile.employees) {
+    const fullName = employee.fullName.toLocaleLowerCase("ru-RU");
+    const department = employee.department.toLocaleLowerCase("ru-RU");
+
+    if (fullName.includes(normalizedQuery) || department.includes(normalizedQuery)) {
+      results.push(employee);
+
+      if (results.length >= limit) {
+        break;
+      }
+    }
+  }
+
+  return results;
 }
 
 export function findEmployeeById(employeeId: string): Employee | undefined {
-  return getEmployees().find((employee) => employee.id === employeeId);
+  return employeesFile.employees.find((employee) => employee.id === employeeId);
 }

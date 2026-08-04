@@ -1,6 +1,6 @@
 import { getTournament, toPublicTeam } from "@/lib/db";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 5;
 
 const ROUND_LABELS: Record<number, string> = {
   1: "1/8 / старт",

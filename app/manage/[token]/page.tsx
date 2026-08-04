@@ -133,6 +133,7 @@ export default function ManageTeamPage() {
       <section className="section">
         <h1 className="section__title">{team.name}</h1>
         <p className="section__text">
+          {team.block ? `Блок: ${team.block}. ` : ""}
           {team.department}. Основа {team.starterCount}/5
           {team.isReady ? " — команда готова к жеребьёвке." : "."}
         </p>

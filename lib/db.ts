@@ -16,6 +16,9 @@ import type {
 const DATA_PATH = path.join(process.cwd(), "data", "tournament.json");
 const REDIS_KEY = "crtr:tournament";
 const MAIN_ROSTER_SIZE = 5;
+const MEMORY_CACHE_TTL_MS = 2000;
+
+let memoryCache: { data: TournamentData; expiresAt: number } | null = null;
 
 function createEmptyTournament(): TournamentData {
   return {
@@ -67,27 +70,37 @@ function writeTournamentToFile(data: TournamentData): void {
 }
 
 export async function getTournament(): Promise<TournamentData> {
+  if (memoryCache && Date.now() < memoryCache.expiresAt) {
+    return memoryCache.data;
+  }
+
   const redisClient = getRedisClient();
+  let tournamentData: TournamentData;
 
   if (redisClient) {
     const storedValue = await redisClient.get<TournamentData>(REDIS_KEY);
-
-    if (!storedValue) {
-      return createEmptyTournament();
-    }
-
-    return storedValue;
-  }
-
-  if (process.env.VERCEL) {
+    tournamentData = storedValue ?? createEmptyTournament();
+  } else if (process.env.VERCEL) {
     // Vercel filesystem is read-only; without Redis return empty safe state.
-    return createEmptyTournament();
+    tournamentData = createEmptyTournament();
+  } else {
+    tournamentData = readTournamentFromFile();
   }
 
-  return readTournamentFromFile();
+  memoryCache = {
+    data: tournamentData,
+    expiresAt: Date.now() + MEMORY_CACHE_TTL_MS,
+  };
+
+  return tournamentData;
 }
 
 export async function saveTournament(data: TournamentData): Promise<void> {
+  memoryCache = {
+    data,
+    expiresAt: Date.now() + MEMORY_CACHE_TTL_MS,
+  };
+
   const redisClient = getRedisClient();
 
   if (redisClient) {
@@ -135,6 +148,7 @@ export function toPublicTeam(team: Team): PublicTeam {
   return {
     id: team.id,
     name: team.name,
+    block: team.block || "",
     department: team.department,
     members: team.members,
     createdAt: team.createdAt,

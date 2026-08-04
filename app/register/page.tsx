@@ -11,6 +11,7 @@ type CreateMode = "directory" | "manual";
 export default function RegisterPage() {
   const [mode, setMode] = useState<CreateMode>("directory");
   const [teamName, setTeamName] = useState("");
+  const [blockName, setBlockName] = useState("");
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [manualFullName, setManualFullName] = useState("");
   const [manualDepartment, setManualDepartment] = useState("");
@@ -40,6 +41,7 @@ export default function RegisterPage() {
         body: JSON.stringify({
           mode,
           teamName,
+          block: blockName,
           employeeId: selectedEmployee?.id,
           manualFullName,
           manualDepartment,
@@ -165,6 +167,21 @@ export default function RegisterPage() {
               placeholder="Например: Enbek Force"
               required
               maxLength={40}
+            />
+          </div>
+
+          <div className="field">
+            <label className="field__label" htmlFor="team-block">
+              Блок
+            </label>
+            <input
+              id="team-block"
+              className="field__input"
+              value={blockName}
+              onChange={(event) => setBlockName(event.target.value)}
+              placeholder="Например: Блок 1 / Цифровизация"
+              required
+              maxLength={80}
             />
           </div>
 

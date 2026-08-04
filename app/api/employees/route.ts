@@ -7,11 +7,13 @@ export async function GET(request: Request) {
   const query = searchParams.get("q") || "";
   const wantDepartments = searchParams.get("departments") === "1";
 
-  if (wantDepartments) {
-    return NextResponse.json({ departments: getDepartments() });
-  }
+  const payload = wantDepartments
+    ? { departments: getDepartments() }
+    : { employees: searchEmployees(query) };
 
-  return NextResponse.json({
-    employees: searchEmployees(query),
+  return NextResponse.json(payload, {
+    headers: {
+      "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120",
+    },
   });
 }
