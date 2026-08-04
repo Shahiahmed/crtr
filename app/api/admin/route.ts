@@ -6,8 +6,8 @@ import {
   isAdminAuthenticated,
   verifyAdminCredentials,
 } from "@/lib/auth";
+import { applyMatchWinner, buildBracket } from "@/lib/bracket";
 import {
-  buildBracket,
   getTournament,
   isTeamReady,
   saveTournament,
@@ -111,47 +111,20 @@ export async function POST(request: Request) {
         );
       }
 
-      const match = tournament.bracket.matches.find(
-        (item) => item.id === body.matchId,
-      );
-
-      if (!match) {
-        return NextResponse.json({ error: "Матч не найден" }, { status: 404 });
-      }
-
-      if (body.winnerId !== match.teamAId && body.winnerId !== match.teamBId) {
+      if ((tournament.bracket as { format?: string }).format !== "groups_playoff") {
         return NextResponse.json(
-          { error: "Победитель не из этого матча" },
+          { error: "Старая сетка. Запустите жеребьёвку заново." },
           { status: 400 },
         );
       }
 
-      match.winnerId = body.winnerId;
-
-      const nextRound = match.round + 1;
-      const nextPosition = Math.floor(match.position / 2);
-      const nextMatch = tournament.bracket.matches.find(
-        (item) => item.round === nextRound && item.position === nextPosition,
-      );
-
-      if (nextMatch) {
-        if (match.position % 2 === 0) {
-          nextMatch.teamAId = body.winnerId;
-        } else {
-          nextMatch.teamBId = body.winnerId;
-        }
-
-        if (nextMatch.teamAId && !nextMatch.teamBId) {
-          nextMatch.winnerId = nextMatch.teamAId;
-        } else if (!nextMatch.teamAId && nextMatch.teamBId) {
-          nextMatch.winnerId = nextMatch.teamBId;
-        } else if (
-          nextMatch.winnerId &&
-          nextMatch.winnerId !== nextMatch.teamAId &&
-          nextMatch.winnerId !== nextMatch.teamBId
-        ) {
-          nextMatch.winnerId = null;
-        }
+      try {
+        applyMatchWinner(tournament.bracket, body.matchId, body.winnerId);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Ошибка обновления матча";
+        const status = message === "Матч не найден" ? 404 : 400;
+        return NextResponse.json({ error: message }, { status });
       }
 
       await saveTournament(tournament);

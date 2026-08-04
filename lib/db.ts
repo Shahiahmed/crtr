@@ -1,17 +1,17 @@
-import { randomBytes, randomUUID } from "crypto";
 import fs from "fs";
 import path from "path";
 
 import { Redis } from "@upstash/redis";
 
 import type {
-  Bracket,
-  BracketMatch,
   PublicTeam,
   Team,
   TeamMember,
   TournamentData,
 } from "@/lib/types";
+import { createEntityId, createManageToken } from "@/lib/ids";
+
+export { createEntityId, createManageToken };
 
 const DATA_PATH = path.join(process.cwd(), "data", "tournament.json");
 const REDIS_KEY = "crtr:tournament";
@@ -117,14 +117,6 @@ export async function saveTournament(data: TournamentData): Promise<void> {
   writeTournamentToFile(data);
 }
 
-export function createManageToken(): string {
-  return randomBytes(24).toString("hex");
-}
-
-export function createEntityId(prefix: string): string {
-  return `${prefix}_${randomUUID().replace(/-/g, "").slice(0, 12)}`;
-}
-
 export function getStarterMembers(team: Team): TeamMember[] {
   return team.members.filter(
     (member) => member.role === "captain" || member.role === "starter",
@@ -188,67 +180,6 @@ export async function isPersonAlreadyRegistered(
       return member.fullName.trim().toLocaleLowerCase("ru-RU") === normalizedName;
     }),
   );
-}
-
-export function buildBracket(teamIds: string[]): Bracket {
-  const shuffledTeamIds = [...teamIds];
-
-  for (let index = shuffledTeamIds.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(Math.random() * (index + 1));
-    const currentValue = shuffledTeamIds[index];
-    shuffledTeamIds[index] = shuffledTeamIds[swapIndex];
-    shuffledTeamIds[swapIndex] = currentValue;
-  }
-
-  const bracketSize = Math.max(
-    2,
-    2 ** Math.ceil(Math.log2(Math.max(shuffledTeamIds.length, 2))),
-  );
-  const paddedTeamIds: Array<string | null> = [...shuffledTeamIds];
-
-  while (paddedTeamIds.length < bracketSize) {
-    paddedTeamIds.push(null);
-  }
-
-  const matches: BracketMatch[] = [];
-  let roundTeamIds: Array<string | null> = paddedTeamIds;
-  let round = 1;
-
-  while (roundTeamIds.length > 1) {
-    const nextRoundTeamIds: Array<string | null> = [];
-
-    for (let position = 0; position < roundTeamIds.length / 2; position += 1) {
-      const teamAId = roundTeamIds[position * 2] ?? null;
-      const teamBId = roundTeamIds[position * 2 + 1] ?? null;
-      let winnerId: string | null = null;
-
-      if (teamAId && !teamBId) {
-        winnerId = teamAId;
-      } else if (!teamAId && teamBId) {
-        winnerId = teamBId;
-      }
-
-      matches.push({
-        id: createEntityId("match"),
-        round,
-        position,
-        teamAId,
-        teamBId,
-        winnerId,
-      });
-
-      nextRoundTeamIds.push(winnerId);
-    }
-
-    roundTeamIds = nextRoundTeamIds;
-    round += 1;
-  }
-
-  return {
-    createdAt: new Date().toISOString(),
-    teamIds: shuffledTeamIds,
-    matches,
-  };
 }
 
 export { MAIN_ROSTER_SIZE };

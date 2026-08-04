@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
+import BracketBoard from "@/components/BracketBoard";
 import type { Bracket, PublicTeam, TournamentSettings } from "@/lib/types";
 
 type AdminTeam = PublicTeam & { manageToken: string };
@@ -103,12 +104,6 @@ export default function AdminPage() {
 
   const teams = state.teams || [];
   const readyTeams = teams.filter((team) => team.isReady);
-  const teamsById = new Map(teams.map((team) => [team.id, team]));
-  const rounds = state.bracket
-    ? [...new Set(state.bracket.matches.map((match) => match.round))].sort(
-        (left, right) => left - right,
-      )
-    : [];
 
   return (
     <main className="page">
@@ -153,7 +148,17 @@ export default function AdminPage() {
             type="button"
             className="button button--teal"
             disabled={isBusy}
-            onClick={() => void runAction({ action: "draw" })}
+            onClick={() => {
+              const isConfirmed = window.confirm(
+                "Запустить жеребьёвку? Будут созданы группы и сетка плей-офф. Текущая сетка сбросится.",
+              );
+
+              if (!isConfirmed) {
+                return;
+              }
+
+              void runAction({ action: "draw" });
+            }}
           >
             Запустить жеребьёвку
           </button>
@@ -217,69 +222,28 @@ export default function AdminPage() {
         {state.bracket ? (
           <article className="panel" style={{ marginTop: "1rem" }}>
             <h2>Сетка — отметить победителя</h2>
-            <div className="bracket" style={{ marginTop: "1rem" }}>
-              <div className="bracket__rounds">
-                {rounds.map((round) => {
-                  const roundMatches = state.bracket!.matches
-                    .filter((match) => match.round === round)
-                    .sort((left, right) => left.position - right.position);
-
-                  return (
-                    <div key={round} className="bracket__round">
-                      <h3>Раунд {round}</h3>
-                      {roundMatches.map((match) => {
-                        const teamA = match.teamAId
-                          ? teamsById.get(match.teamAId)
-                          : null;
-                        const teamB = match.teamBId
-                          ? teamsById.get(match.teamBId)
-                          : null;
-
-                        return (
-                          <div key={match.id} className="match">
-                            <button
-                              type="button"
-                              className={
-                                match.winnerId === match.teamAId ? "is-winner" : ""
-                              }
-                              disabled={!match.teamAId || isBusy}
-                              onClick={() =>
-                                match.teamAId &&
-                                void runAction({
-                                  action: "set-winner",
-                                  matchId: match.id,
-                                  winnerId: match.teamAId,
-                                })
-                              }
-                            >
-                              <span>{teamA?.name || "BYE"}</span>
-                              <span>A</span>
-                            </button>
-                            <button
-                              type="button"
-                              className={
-                                match.winnerId === match.teamBId ? "is-winner" : ""
-                              }
-                              disabled={!match.teamBId || isBusy}
-                              onClick={() =>
-                                match.teamBId &&
-                                void runAction({
-                                  action: "set-winner",
-                                  matchId: match.id,
-                                  winnerId: match.teamBId,
-                                })
-                              }
-                            >
-                              <span>{teamB?.name || "BYE"}</span>
-                              <span>B</span>
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })}
-              </div>
+            <p className="field__hint" style={{ marginTop: "0.5rem" }}>
+              Сначала сыграйте групповые матчи. Когда группа завершена, топ-2
+              попадут в плей-офф автоматически.
+            </p>
+            <div style={{ marginTop: "1rem" }}>
+              <BracketBoard
+                bracket={state.bracket}
+                teams={teams.map((team) => ({
+                  id: team.id,
+                  name: team.name,
+                  starterCount: team.starterCount,
+                }))}
+                interactive
+                isBusy={isBusy}
+                onSelectWinner={(matchId, winnerId) =>
+                  void runAction({
+                    action: "set-winner",
+                    matchId,
+                    winnerId,
+                  })
+                }
+              />
             </div>
           </article>
         ) : null}

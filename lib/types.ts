@@ -20,8 +20,14 @@ export type Team = {
   createdAt: string;
 };
 
+export type MatchStage = "group" | "semifinal" | "final" | "third_place";
+
+export type BracketGroupId = "A" | "B";
+
 export type BracketMatch = {
   id: string;
+  stage: MatchStage;
+  groupId: BracketGroupId | null;
   round: number;
   position: number;
   teamAId: string | null;
@@ -29,10 +35,25 @@ export type BracketMatch = {
   winnerId: string | null;
 };
 
+export type BracketGroup = {
+  id: BracketGroupId;
+  teamIds: string[];
+};
+
 export type Bracket = {
+  format: "groups_playoff";
   createdAt: string;
   teamIds: string[];
+  groups: BracketGroup[];
   matches: BracketMatch[];
+};
+
+export type GroupStanding = {
+  teamId: string;
+  played: number;
+  wins: number;
+  losses: number;
+  place: number;
 };
 
 export type TournamentSettings = {
