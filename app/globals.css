@@ -218,6 +218,26 @@ select {
   color: var(--accent-2);
 }
 
+.site-header__my-team {
+  padding: 0.5rem 0.85rem;
+  color: #1a1206;
+  background: linear-gradient(180deg, #f0b24a, #c78420);
+  border: 1px solid rgba(255, 210, 120, 0.55);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  clip-path: var(--clip-button);
+  box-shadow: 0 0 0 0 rgba(222, 155, 53, 0.55);
+  animation: myTeamPulse 1.8s ease-in-out infinite;
+}
+
+.site-header__my-team:hover,
+.site-header__my-team.is-active {
+  filter: brightness(1.08);
+  color: #1a1206;
+}
+
 .page {
   width: min(1120px, calc(100% - 1.25rem));
   margin: 0 auto;
@@ -952,6 +972,16 @@ select {
   }
 }
 
+@keyframes myTeamPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(222, 155, 53, 0.15), 0 0 12px rgba(222, 155, 53, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(222, 155, 53, 0.08), 0 0 22px rgba(245, 184, 74, 0.55);
+  }
+}
+
 @media (max-width: 860px) {
   .site-header__inner,
   .page,
@@ -983,7 +1013,8 @@ select {
   }
 
   .site-header__link,
-  .site-header__admin {
+  .site-header__admin,
+  .site-header__my-team {
     min-height: 2.9rem;
     display: flex;
     align-items: center;

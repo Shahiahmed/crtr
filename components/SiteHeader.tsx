@@ -1,13 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+
+import {
+  CAPTAIN_SESSION_EVENT,
+  syncCaptainSession,
+  type CaptainSession,
+} from "@/lib/captain-session";
 
 const NAV_ITEMS = [
   { href: "/", label: "Главная" },
   { href: "/register", label: "Создать команду" },
-  { href: "/my-team", label: "Моя команда" },
   { href: "/teams", label: "Команды" },
   { href: "/bracket", label: "Сетка" },
   { href: "/admin", label: "Админ" },
@@ -15,7 +20,9 @@ const NAV_ITEMS = [
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [captainSession, setCaptainSession] = useState<CaptainSession | null>(null);
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -28,6 +35,33 @@ export function SiteHeader() {
       document.body.classList.remove("nav-open");
     };
   }, [isMenuOpen]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function refreshCaptainSession() {
+      const session = await syncCaptainSession();
+
+      if (isMounted) {
+        setCaptainSession(session);
+      }
+    }
+
+    void refreshCaptainSession();
+
+    const handleSessionChange = () => {
+      void refreshCaptainSession();
+    };
+
+    window.addEventListener(CAPTAIN_SESSION_EVENT, handleSessionChange);
+    window.addEventListener("storage", handleSessionChange);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener(CAPTAIN_SESSION_EVENT, handleSessionChange);
+      window.removeEventListener("storage", handleSessionChange);
+    };
+  }, []);
 
   return (
     <header className="site-header">
@@ -73,6 +107,20 @@ export function SiteHeader() {
               </Link>
             );
           })}
+
+          {captainSession ? (
+            <Link
+              href={captainSession.manageUrl}
+              className={`site-header__my-team${pathname.startsWith("/manage") || pathname === "/my-team" ? " is-active" : ""}`}
+              onClick={(event) => {
+                event.preventDefault();
+                setIsMenuOpen(false);
+                router.push(captainSession.manageUrl);
+              }}
+            >
+              Моя команда
+            </Link>
+          ) : null}
         </nav>
       </div>
     </header>

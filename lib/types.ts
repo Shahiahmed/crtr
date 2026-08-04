@@ -15,7 +15,7 @@ export type Team = {
   block: string;
   department: string;
   manageToken: string;
-  accessCode: string;
+  accessCode?: string;
   members: TeamMember[];
   createdAt: string;
 };

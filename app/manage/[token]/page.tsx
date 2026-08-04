@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { EmployeePicker } from "@/components/EmployeePicker";
 import { MemberList } from "@/components/MemberList";
-import { saveCaptainSession, readCaptainSession } from "@/lib/captain-session";
+import { clearCaptainSession, saveCaptainSession } from "@/lib/captain-session";
 import type { Employee, PublicTeam } from "@/lib/types";
 
 type AddMode = "directory" | "manual";
@@ -15,7 +15,6 @@ export default function ManageTeamPage() {
   const token = params.token;
 
   const [team, setTeam] = useState<PublicTeam | null>(null);
-  const [accessCode, setAccessCode] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [mode, setMode] = useState<AddMode>("directory");
@@ -34,26 +33,19 @@ export default function ManageTeamPage() {
       const payload = (await response.json()) as {
         error?: string;
         team?: PublicTeam;
-        accessCode?: string;
       };
 
       if (!response.ok || !payload.team) {
+        clearCaptainSession();
         throw new Error(payload.error || "Команда не найдена");
       }
 
       setTeam(payload.team);
       setManualDepartment(payload.team.department);
-      setAccessCode(payload.accessCode || "");
-
-      const existingSession = readCaptainSession();
       saveCaptainSession({
         manageToken: token,
         manageUrl: `/manage/${token}`,
         teamName: payload.team.name,
-        accessCode:
-          payload.accessCode ||
-          (existingSession?.manageToken === token ? existingSession.accessCode : "") ||
-          "",
       });
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Ошибка загрузки");
@@ -152,16 +144,8 @@ export default function ManageTeamPage() {
           {team.department}. Основа {team.starterCount}/5
           {team.isReady ? " — команда готова к жеребьёвке." : "."}
           {" "}
-          Потом всегда заходи через меню «Моя команда».
+          Вернуться можно через подсвеченное меню «Моя команда».
         </p>
-        {accessCode ? (
-          <div className="success-box" style={{ marginBottom: "1.25rem", maxWidth: 420 }}>
-            <p>Код капитана:</p>
-            <code style={{ fontSize: "1.4rem", letterSpacing: "0.18em", textAlign: "center" }}>
-              {accessCode}
-            </code>
-          </div>
-        ) : null}
 
         <div className="stats-row">
           <div className="stat">

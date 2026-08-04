@@ -19,18 +19,7 @@ export default function RegisterPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [manageUrl, setManageUrl] = useState("");
-  const [accessCode, setAccessCode] = useState("");
   const [createdTeamName, setCreatedTeamName] = useState("");
-  const [absoluteManageUrl, setAbsoluteManageUrl] = useState("");
-
-  useEffect(() => {
-    if (!manageUrl) {
-      setAbsoluteManageUrl("");
-      return;
-    }
-
-    setAbsoluteManageUrl(`${window.location.origin}${manageUrl}`);
-  }, [manageUrl]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -55,7 +44,6 @@ export default function RegisterPage() {
         error?: string;
         manageUrl?: string;
         manageToken?: string;
-        accessCode?: string;
         team?: { name?: string };
       };
 
@@ -64,7 +52,6 @@ export default function RegisterPage() {
       }
 
       const nextManageUrl = payload.manageUrl || "";
-      const nextAccessCode = payload.accessCode || "";
       const nextTeamName = payload.team?.name || teamName;
 
       if (payload.manageToken && nextManageUrl) {
@@ -72,12 +59,10 @@ export default function RegisterPage() {
           manageToken: payload.manageToken,
           manageUrl: nextManageUrl,
           teamName: nextTeamName,
-          accessCode: nextAccessCode,
         });
       }
 
       setCreatedTeamName(nextTeamName);
-      setAccessCode(nextAccessCode);
       setManageUrl(nextManageUrl);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Ошибка");
@@ -93,28 +78,19 @@ export default function RegisterPage() {
           <h1 className="section__title">Команда создана</h1>
           <div className="success-box">
             <p>
-              <strong>{createdTeamName}</strong> сохранена в этом браузере. Дальше заходи
-              через меню «Моя команда».
-            </p>
-            <p style={{ marginTop: "0.85rem" }}>Код капитана (запиши!):</p>
-            <code style={{ fontSize: "1.6rem", letterSpacing: "0.2em", textAlign: "center" }}>
-              {accessCode}
-            </code>
-            <p className="field__hint" style={{ marginTop: "0.75rem" }}>
-              Если сменишь телефон/браузер — войди по названию команды + этому коду.
+              <strong>{createdTeamName}</strong> сохранена в этом браузере. В меню сверху
+              появилась подсвеченная кнопка <strong>«Моя команда»</strong> — через неё
+              всегда можно вернуться к составу.
             </p>
           </div>
           <div className="hero__actions" style={{ marginTop: "1.25rem" }}>
             <Link href={manageUrl} className="button">
               Перейти к управлению
             </Link>
-            <Link href="/my-team" className="button button--ghost">
-              Моя команда
+            <Link href="/teams" className="button button--ghost">
+              К списку команд
             </Link>
           </div>
-          <p className="muted" style={{ marginTop: "1rem", wordBreak: "break-all" }}>
-            Ссылка: {absoluteManageUrl || manageUrl}
-          </p>
         </section>
       </main>
     );
@@ -221,13 +197,6 @@ export default function RegisterPage() {
             {isSubmitting ? "Создаём..." : "Создать команду"}
           </button>
         </form>
-
-        <p className="muted" style={{ marginTop: "1rem" }}>
-          Уже создавал команду?{" "}
-          <Link href="/my-team" style={{ color: "var(--accent-hot)" }}>
-            Войти в «Моя команда»
-          </Link>
-        </p>
       </section>
     </main>
   );

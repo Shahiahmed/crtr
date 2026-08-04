@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import type { Bracket, PublicTeam, TournamentSettings } from "@/lib/types";
 
-type AdminTeam = PublicTeam & { manageToken: string; accessCode?: string };
+type AdminTeam = PublicTeam & { manageToken: string };
 
 type AdminState = {
   authenticated: boolean;
@@ -186,32 +186,29 @@ export default function AdminPage() {
                 <p>
                   Подтверждено {team.confirmedCount} · Вручную {team.unconfirmedCount}
                 </p>
-                {team.accessCode ? (
-                  <p className="muted" style={{ margin: "0.5rem 0" }}>
-                    Код капитана: <strong>{team.accessCode}</strong>
-                  </p>
-                ) : null}
-                <p className="muted" style={{ margin: "0.5rem 0" }}>
-                  <Link href={`/manage/${team.manageToken}`}>Ссылка капитана</Link>
-                </p>
-                <button
-                  type="button"
-                  className="button button--ghost"
-                  disabled={isBusy}
-                  onClick={() => {
-                    const isConfirmed = window.confirm(
-                      `Удалить команду «${team.name}»?\nЭто действие нельзя отменить.`,
-                    );
+                <div className="hero__actions" style={{ marginTop: "0.85rem" }}>
+                  <Link href={`/manage/${team.manageToken}`} className="button">
+                    Редактировать состав
+                  </Link>
+                  <button
+                    type="button"
+                    className="button button--ghost"
+                    disabled={isBusy}
+                    onClick={() => {
+                      const isConfirmed = window.confirm(
+                        `Удалить команду «${team.name}»?\nЭто действие нельзя отменить.`,
+                      );
 
-                    if (!isConfirmed) {
-                      return;
-                    }
+                      if (!isConfirmed) {
+                        return;
+                      }
 
-                    void runAction({ action: "delete-team", teamId: team.id });
-                  }}
-                >
-                  Удалить команду
-                </button>
+                      void runAction({ action: "delete-team", teamId: team.id });
+                    }}
+                  >
+                    Удалить
+                  </button>
+                </div>
               </div>
             ))}
           </div>

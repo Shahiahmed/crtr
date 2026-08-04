@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
 import {
-  createAccessCode,
   createEntityId,
   getStarterMembers,
   getTournament,
@@ -34,17 +33,11 @@ export async function GET(_request: Request, context: RouteContext) {
     return NextResponse.json({ error: "Команда не найдена" }, { status: 404 });
   }
 
-  if (!tournament.teams[teamIndex].accessCode) {
-    tournament.teams[teamIndex].accessCode = createAccessCode();
-    await saveTournament(tournament);
-  }
-
   const team = tournament.teams[teamIndex];
 
   return NextResponse.json({
     team: toPublicTeam(team),
     manageToken: team.manageToken,
-    accessCode: team.accessCode,
   });
 }
 
