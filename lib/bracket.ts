@@ -343,11 +343,19 @@ function clearPlayoffAssignments(bracket: Bracket): void {
 function findMatch(
   bracket: Bracket,
   stage: MatchStage,
-  position = 0,
+  position?: number,
 ): BracketMatch | undefined {
-  return bracket.matches.find(
-    (match) => match.stage === stage && match.position === position,
-  );
+  return bracket.matches.find((match) => {
+    if (match.stage !== stage) {
+      return false;
+    }
+
+    if (position === undefined) {
+      return true;
+    }
+
+    return match.position === position;
+  });
 }
 
 function seedPlayoffs(bracket: Bracket): void {
