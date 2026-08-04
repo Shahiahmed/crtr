@@ -4,8 +4,8 @@ import { getTournament, toPublicTeam } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-export default function HomePage() {
-  const tournament = getTournament();
+export default async function HomePage() {
+  const tournament = await getTournament();
   const teams = tournament.teams.map(toPublicTeam);
   const readyCount = teams.filter((team) => team.isReady).length;
 

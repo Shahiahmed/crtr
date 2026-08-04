@@ -2,6 +2,8 @@ import { randomBytes, randomUUID } from "crypto";
 import fs from "fs";
 import path from "path";
 
+import { Redis } from "@upstash/redis";
+
 import type {
   Bracket,
   BracketMatch,
@@ -12,6 +14,7 @@ import type {
 } from "@/lib/types";
 
 const DATA_PATH = path.join(process.cwd(), "data", "tournament.json");
+const REDIS_KEY = "crtr:tournament";
 const MAIN_ROSTER_SIZE = 5;
 
 function createEmptyTournament(): TournamentData {
@@ -26,18 +29,34 @@ function createEmptyTournament(): TournamentData {
   };
 }
 
-function readTournament(): TournamentData {
-  if (!fs.existsSync(DATA_PATH)) {
-    const emptyTournament = createEmptyTournament();
-    writeTournament(emptyTournament);
-    return emptyTournament;
-  }
-
-  const rawContent = fs.readFileSync(DATA_PATH, "utf8");
-  return JSON.parse(rawContent) as TournamentData;
+function hasRedisConfig(): boolean {
+  return Boolean(
+    process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN,
+  );
 }
 
-function writeTournament(data: TournamentData): void {
+function getRedisClient(): Redis | null {
+  if (!hasRedisConfig()) {
+    return null;
+  }
+
+  return Redis.fromEnv();
+}
+
+function readTournamentFromFile(): TournamentData {
+  try {
+    if (!fs.existsSync(DATA_PATH)) {
+      return createEmptyTournament();
+    }
+
+    const rawContent = fs.readFileSync(DATA_PATH, "utf8");
+    return JSON.parse(rawContent) as TournamentData;
+  } catch {
+    return createEmptyTournament();
+  }
+}
+
+function writeTournamentToFile(data: TournamentData): void {
   const directoryPath = path.dirname(DATA_PATH);
 
   if (!fs.existsSync(directoryPath)) {
@@ -47,12 +66,42 @@ function writeTournament(data: TournamentData): void {
   fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2), "utf8");
 }
 
-export function getTournament(): TournamentData {
-  return readTournament();
+export async function getTournament(): Promise<TournamentData> {
+  const redisClient = getRedisClient();
+
+  if (redisClient) {
+    const storedValue = await redisClient.get<TournamentData>(REDIS_KEY);
+
+    if (!storedValue) {
+      return createEmptyTournament();
+    }
+
+    return storedValue;
+  }
+
+  if (process.env.VERCEL) {
+    // Vercel filesystem is read-only; without Redis return empty safe state.
+    return createEmptyTournament();
+  }
+
+  return readTournamentFromFile();
 }
 
-export function saveTournament(data: TournamentData): void {
-  writeTournament(data);
+export async function saveTournament(data: TournamentData): Promise<void> {
+  const redisClient = getRedisClient();
+
+  if (redisClient) {
+    await redisClient.set(REDIS_KEY, data);
+    return;
+  }
+
+  if (process.env.VERCEL) {
+    throw new Error(
+      "На Vercel нужно подключить Upstash Redis (UPSTASH_REDIS_REST_URL и UPSTASH_REDIS_REST_TOKEN).",
+    );
+  }
+
+  writeTournamentToFile(data);
 }
 
 export function createManageToken(): string {
@@ -97,17 +146,24 @@ export function toPublicTeam(team: Team): PublicTeam {
   };
 }
 
-export function findTeamById(teamId: string): Team | undefined {
-  return readTournament().teams.find((team) => team.id === teamId);
+export async function findTeamById(teamId: string): Promise<Team | undefined> {
+  const tournament = await getTournament();
+  return tournament.teams.find((team) => team.id === teamId);
 }
 
-export function findTeamByManageToken(manageToken: string): Team | undefined {
-  return readTournament().teams.find((team) => team.manageToken === manageToken);
+export async function findTeamByManageToken(
+  manageToken: string,
+): Promise<Team | undefined> {
+  const tournament = await getTournament();
+  return tournament.teams.find((team) => team.manageToken === manageToken);
 }
 
-export function isPersonAlreadyRegistered(fullName: string, employeeId: string | null): boolean {
+export async function isPersonAlreadyRegistered(
+  fullName: string,
+  employeeId: string | null,
+): Promise<boolean> {
   const normalizedName = fullName.trim().toLocaleLowerCase("ru-RU");
-  const tournament = readTournament();
+  const tournament = await getTournament();
 
   return tournament.teams.some((team) =>
     team.members.some((member) => {
@@ -130,7 +186,10 @@ export function buildBracket(teamIds: string[]): Bracket {
     shuffledTeamIds[swapIndex] = currentValue;
   }
 
-  const bracketSize = Math.max(2, 2 ** Math.ceil(Math.log2(Math.max(shuffledTeamIds.length, 2))));
+  const bracketSize = Math.max(
+    2,
+    2 ** Math.ceil(Math.log2(Math.max(shuffledTeamIds.length, 2))),
+  );
   const paddedTeamIds: Array<string | null> = [...shuffledTeamIds];
 
   while (paddedTeamIds.length < bracketSize) {

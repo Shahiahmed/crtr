@@ -22,8 +22,8 @@ function shortName(fullName: string): string {
   return `${surname} ${initials}`;
 }
 
-export default function TeamsPage() {
-  const tournament = getTournament();
+export default async function TeamsPage() {
+  const tournament = await getTournament();
   const teams = tournament.teams.map(toPublicTeam);
 
   return (

@@ -23,6 +23,15 @@ npm run dev
 
 ## Данные
 
-- `data/employees.json` — справочник сотрудников (291 человек, 29 подразделений)
-- `data/tournament.json` — команды и сетка (создаётся автоматически)
-- Обновить справочник: положи CSV в `data/employees-raw.csv` и запусти `node scripts/parse-employees.mjs`
+- `data/employees.json` — справочник сотрудников
+- Локально команды пишутся в `data/tournament.json`
+- На Vercel нужен **Upstash Redis** (файловая система там read-only)
+
+### Vercel + Upstash (обязательно для продакшена)
+
+1. Создай бесплатную Redis БД на [upstash.com](https://upstash.com)
+2. Скопируй `UPSTASH_REDIS_REST_URL` и `UPSTASH_REDIS_REST_TOKEN`
+3. В Vercel → Project → Settings → Environment Variables добавь оба ключа
+4. Redeploy
+
+Без Redis сайт откроется, но регистрация команд на Vercel работать не будет.

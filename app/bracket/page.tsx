@@ -9,8 +9,8 @@ const ROUND_LABELS: Record<number, string> = {
   4: "Финал",
 };
 
-export default function BracketPage() {
-  const tournament = getTournament();
+export default async function BracketPage() {
+  const tournament = await getTournament();
   const teamsById = new Map(
     tournament.teams.map((team) => [team.id, toPublicTeam(team)]),
   );
