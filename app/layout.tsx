@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Manrope, Unbounded } from "next/font/google";
 
 import { SiteHeader } from "@/components/SiteHeader";
@@ -17,8 +17,15 @@ const bodyFont = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "ЦРТР CS Tournament",
-  description: "Корпоративный турнир Counter-Strike АО «ЦРТР» — регистрация команд и жеребьёвка",
+  title: "ЦРТР CS2 Tournament",
+  description: "Корпоративный турнир Counter-Strike 2 АО «ЦРТР» — регистрация команд и жеребьёвка",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0a0a0b",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

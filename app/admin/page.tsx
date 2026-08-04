@@ -192,7 +192,17 @@ export default function AdminPage() {
                   type="button"
                   className="button button--ghost"
                   disabled={isBusy}
-                  onClick={() => void runAction({ action: "delete-team", teamId: team.id })}
+                  onClick={() => {
+                    const isConfirmed = window.confirm(
+                      `Удалить команду «${team.name}»?\nЭто действие нельзя отменить.`,
+                    );
+
+                    if (!isConfirmed) {
+                      return;
+                    }
+
+                    void runAction({ action: "delete-team", teamId: team.id });
+                  }}
                 >
                   Удалить команду
                 </button>

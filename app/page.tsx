@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { getTournament, toPublicTeam } from "@/lib/db";
@@ -13,22 +14,40 @@ export default async function HomePage() {
     <>
       <section className="hero">
         <div className="hero__bg" aria-hidden="true" />
-        <div className="hero__content">
-          <p className="hero__brand">
-            АО «ЦРТР» <span>CS</span>
-          </p>
-          <h1 className="hero__headline">Corporate Tournament</h1>
-          <p className="hero__text">
-            Капитаны собирают команды 5v5 по подразделениям. Игроки из справочника —
-            подтверждены, ручной ввод — на проверке. Дальше жеребьёвка и сетка.
-          </p>
-          <div className="hero__actions">
-            <Link href="/register" className="button">
-              Создать команду
-            </Link>
-            <Link href="/teams" className="button button--ghost">
-              Смотреть команды
-            </Link>
+        <div className="hero__layout">
+          <div className="hero__content">
+            <p className="hero__eyebrow">Live lobby · 5v5</p>
+            <p className="hero__brand">
+              ЦРТР <span>CS2</span>
+            </p>
+            <h1 className="hero__headline">Corporate Tournament</h1>
+            <p className="hero__text">
+              Капитаны собирают пятёрки по подразделениям. Из справочника — свой, вручную —
+              на проверке. Потом жеребьёвка и сетка.
+            </p>
+            <div className="hero__actions">
+              <Link href="/register" className="button">
+                Создать команду
+              </Link>
+              <Link href="/teams" className="button button--ghost">
+                Смотреть команды
+              </Link>
+            </div>
+            <div className="hero__sides" aria-hidden="true">
+              <span className="hero__side hero__side--t">T</span>
+              <span className="hero__side hero__side--ct">CT</span>
+            </div>
+          </div>
+
+          <div className="hero__visual">
+            <Image
+              src="/hero.png"
+              alt="Terrorists CS2"
+              width={920}
+              height={920}
+              priority
+              className="hero__image"
+            />
           </div>
         </div>
       </section>
@@ -49,7 +68,7 @@ export default async function HomePage() {
               <span>готовы 5/5</span>
             </div>
             <div className="stat">
-              <strong>{tournament.settings.registrationOpen ? "Открыта" : "Закрыта"}</strong>
+              <strong>{tournament.settings.registrationOpen ? "OPEN" : "CLOSED"}</strong>
               <span>регистрация</span>
             </div>
           </div>
