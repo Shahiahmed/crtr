@@ -25,21 +25,29 @@ function shortName(fullName: string): string {
 
 function shortDepartment(department: string): string {
   return department
-    .replace(/^Департамент\s+/i, "Деп. ")
-    .replace(/^Служба\s+/i, "Сл. ")
-    .replace(/^Офис\s+/i, "Офис ");
+    .replace(/^Департамент\s+/i, "")
+    .replace(/^Служба\s+/i, "")
+    .replace(/^Офис\s+/i, "");
 }
 
 function roleLabel(role: TeamMember["role"]): string {
   if (role === "captain") {
-    return "Капитан";
+    return "кап.";
   }
 
   if (role === "substitute") {
-    return "Запас";
+    return "зап.";
   }
 
-  return "Основа";
+  return "осн.";
+}
+
+function sortMembers(members: TeamMember[]): TeamMember[] {
+  const roleOrder = { captain: 0, starter: 1, substitute: 2 };
+
+  return [...members].sort(
+    (left, right) => roleOrder[left.role] - roleOrder[right.role],
+  );
 }
 
 export default async function TeamsPage() {
@@ -51,8 +59,7 @@ export default async function TeamsPage() {
       <section className="section">
         <h1 className="section__title">Команды турнира</h1>
         <p className="section__text">
-          У каждого игрока — свой департамент. Зелёный бейдж: из справочника, жёлтый —
-          вручную.
+          В одной строке: игрок, роль и его департамент.
         </p>
 
         {teams.length === 0 ? (
@@ -62,79 +69,45 @@ export default async function TeamsPage() {
             <div className="teams-table__head">
               <span>Команда</span>
               <span>Участники</span>
-              <span>Статус</span>
+              <span>Состав</span>
             </div>
             {teams.map((team) => {
-              const starters = team.members.filter(
-                (member) => member.role === "captain" || member.role === "starter",
-              );
-              const substitutes = team.members.filter(
-                (member) => member.role === "substitute",
-              );
+              const members = sortMembers(team.members);
 
               return (
                 <article key={team.id} className="teams-table__row">
-                  <div>
+                  <div className="teams-table__team">
                     <strong className="teams-table__name">{team.name}</strong>
-                    {team.block ? (
-                      <p className="teams-table__captain">Блок: {team.block}</p>
-                    ) : null}
-                    <p className="teams-table__meta" style={{ marginTop: "0.55rem" }}>
-                      <span className="badge badge--ok">{team.confirmedCount} OK</span>
-                      {team.unconfirmedCount > 0 ? (
-                        <span className="badge badge--warn">
-                          {team.unconfirmedCount} вручную
-                        </span>
-                      ) : null}
-                    </p>
+                    {team.block ? <span className="teams-table__block">{team.block}</span> : null}
                   </div>
 
-                  <div className="teams-table__people">
-                    {starters.length === 0 ? (
-                      <p className="teams-table__roster">—</p>
+                  <ul className="teams-people">
+                    {members.length === 0 ? (
+                      <li className="teams-people__empty">Пока никого нет</li>
                     ) : (
-                      <ul className="teams-people">
-                        {starters.map((member) => (
-                          <li key={member.id} className="teams-people__item">
-                            <div className="teams-people__main">
-                              <strong>{shortName(member.fullName)}</strong>
-                              <span className="teams-people__role">
-                                {roleLabel(member.role)}
-                              </span>
-                              <span
-                                className={`badge ${member.isConfirmed ? "badge--ok" : "badge--warn"}`}
-                              >
-                                {member.isConfirmed ? "OK" : "вручную"}
-                              </span>
-                            </div>
-                            <p className="teams-people__department">
-                              {shortDepartment(member.department)}
-                            </p>
-                          </li>
-                        ))}
-                      </ul>
+                      members.map((member) => (
+                        <li key={member.id} className="teams-people__item">
+                          <strong className="teams-people__name">
+                            {shortName(member.fullName)}
+                          </strong>
+                          <span className="teams-people__role">{roleLabel(member.role)}</span>
+                          <span
+                            className={`teams-people__mark ${member.isConfirmed ? "is-ok" : "is-manual"}`}
+                            title={member.isConfirmed ? "Из справочника" : "Вручную"}
+                          >
+                            {member.isConfirmed ? "●" : "○"}
+                          </span>
+                          <span className="teams-people__department" title={member.department}>
+                            {shortDepartment(member.department)}
+                          </span>
+                        </li>
+                      ))
                     )}
-
-                    {substitutes.length > 0 ? (
-                      <ul className="teams-people teams-people--subs">
-                        {substitutes.map((member) => (
-                          <li key={member.id} className="teams-people__item">
-                            <div className="teams-people__main">
-                              <strong>{shortName(member.fullName)}</strong>
-                              <span className="teams-people__role">Запас</span>
-                            </div>
-                            <p className="teams-people__department">
-                              {shortDepartment(member.department)}
-                            </p>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : null}
-                  </div>
+                  </ul>
 
                   <div className="teams-table__status">
                     <span className={`badge ${team.isReady ? "badge--ok" : "badge--muted"}`}>
-                      {team.isReady ? "Готова" : `${team.starterCount}/5`}
+                      {team.starterCount}/5
                     </span>
                   </div>
                 </article>
