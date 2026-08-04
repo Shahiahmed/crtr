@@ -734,6 +734,50 @@ select {
   padding-top: 0.15rem;
 }
 
+.teams-people {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.teams-people--subs {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--line-soft);
+}
+
+.teams-people__item {
+  min-width: 0;
+}
+
+.teams-people__main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.teams-people__main strong {
+  font-size: 0.95rem;
+}
+
+.teams-people__role {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.teams-people__department {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
 .team-card {
   border: 1px solid var(--line-soft);
   background: rgba(18, 18, 20, 0.95);
