@@ -436,15 +436,44 @@ select {
   line-height: 1.5;
 }
 
+.prizes-block {
+  margin: 0 auto 1.5rem;
+}
+
+.prizes-block__champion {
+  margin: 0 0 0.85rem;
+  text-align: center;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.15rem, 3.5vw, 1.55rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #f0c85a;
+}
+
+.prizes-block__champion strong {
+  color: #f0c85a;
+}
+
 .prizes {
   display: flex;
   justify-content: center;
   align-items: flex-end;
   gap: clamp(1rem, 4vw, 2.25rem);
-  margin: 1.1rem auto 1.75rem;
+  margin: 0 auto;
   padding: 0.85rem 1rem 1rem;
   max-width: 28rem;
   text-align: center;
+}
+
+.prizes__team {
+  max-width: 7.5rem;
+  margin-top: 0.1rem;
+  color: var(--text);
+  font-size: 0.78rem;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .prizes__item {
@@ -887,16 +916,20 @@ select {
 
 .teams-people__name {
   min-width: 0;
+  font-size: 0.8rem;
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .teams-people__role {
   color: var(--text);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
 }
 
 .teams-people__status {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   letter-spacing: 0.02em;
 }
 
@@ -912,9 +945,11 @@ select {
   min-width: 0;
   margin: 0;
   color: var(--muted);
-  font-size: 0.82rem;
-  line-height: 1.3;
-  overflow-wrap: anywhere;
+  font-size: 0.9rem;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .team-card {

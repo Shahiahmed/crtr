@@ -1,7 +1,58 @@
 import BracketBoard from "@/components/BracketBoard";
+import PrizePodium from "@/components/PrizePodium";
 import { getTournament, toPublicTeam } from "@/lib/db";
+import type { Bracket } from "@/lib/types";
 
 export const revalidate = 5;
+
+function getTeamNameById(
+  teams: Array<{ id: string; name: string }>,
+  teamId: string | null | undefined,
+): string | null {
+  if (!teamId) {
+    return null;
+  }
+
+  return teams.find((team) => team.id === teamId)?.name || null;
+}
+
+function getMatchLoserId(match: {
+  teamAId: string | null;
+  teamBId: string | null;
+  winnerId: string | null;
+}): string | null {
+  if (!match.winnerId) {
+    return null;
+  }
+
+  if (match.winnerId === match.teamAId) {
+    return match.teamBId;
+  }
+
+  if (match.winnerId === match.teamBId) {
+    return match.teamAId;
+  }
+
+  return null;
+}
+
+function getPodiumNames(
+  bracket: Bracket,
+  teams: Array<{ id: string; name: string }>,
+) {
+  const finalMatch = bracket.matches.find((match) => match.stage === "final");
+  const thirdPlaceMatch = bracket.matches.find(
+    (match) => match.stage === "third_place",
+  );
+
+  const championName = getTeamNameById(teams, finalMatch?.winnerId);
+  const secondPlaceName = championName
+    ? getTeamNameById(teams, finalMatch ? getMatchLoserId(finalMatch) : null)
+    : null;
+  const thirdPlaceName = getTeamNameById(teams, thirdPlaceMatch?.winnerId);
+
+  return { championName, secondPlaceName, thirdPlaceName };
+}
 
 export default async function BracketPage() {
   const tournament = await getTournament();
@@ -20,6 +71,7 @@ export default async function BracketPage() {
     return (
       <main className="page">
         <section className="section">
+          <PrizePodium />
           <h1 className="section__title">Сетка турнира</h1>
           <p className="section__text">
             Формат: группы + плей-офф. Жеребьёвка ещё не запускалась. Админ
@@ -30,9 +82,17 @@ export default async function BracketPage() {
     );
   }
 
+  const podium = getPodiumNames(bracket, teams);
+
   return (
     <main className="page">
       <section className="section">
+        <PrizePodium
+          championName={podium.championName}
+          secondPlaceName={podium.secondPlaceName}
+          thirdPlaceName={podium.thirdPlaceName}
+        />
+
         <h1 className="section__title">Сетка турнира</h1>
         <p className="section__text">
           Жеребьёвка от{" "}
