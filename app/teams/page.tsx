@@ -71,8 +71,6 @@ export default async function TeamsPage() {
   return (
     <main className="page">
       <section className="section">
-        <h1 className="section__title">Команды турнира</h1>
-
         <div className="prizes" aria-label="Призовые места">
           <article className="prizes__item prizes__item--silver">
             <TrophyCup tone="silver" />
