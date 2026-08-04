@@ -113,7 +113,7 @@ export async function POST(request: Request, context: RouteContext) {
       const manualDepartment = body.manualDepartment?.trim() || team.department;
 
       if (manualFullName.length < 5) {
-        return NextResponse.json({ error: "Укажите ФИО" }, { status: 400 });
+        return NextResponse.json({ error: "Укажите имя и фамилию" }, { status: 400 });
       }
 
       if (await isPersonAlreadyRegistered(manualFullName, null)) {

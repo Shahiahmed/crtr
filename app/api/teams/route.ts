@@ -112,7 +112,7 @@ export async function POST(request: Request) {
 
       if (manualFullName.length < 5) {
         return NextResponse.json(
-          { error: "Укажите полное ФИО капитана" },
+          { error: "Укажите имя и фамилию капитана" },
           { status: 400 },
         );
       }

@@ -436,6 +436,107 @@ select {
   line-height: 1.5;
 }
 
+.prizes {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: clamp(1rem, 4vw, 2.25rem);
+  margin: 1.1rem auto 1.75rem;
+  padding: 0.85rem 1rem 1rem;
+  max-width: 28rem;
+  text-align: center;
+}
+
+.prizes__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.28rem;
+  min-width: 5.5rem;
+}
+
+.prizes__item--gold {
+  transform: translateY(-0.35rem);
+}
+
+.prizes__cup {
+  width: 2.6rem;
+  height: auto;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35));
+}
+
+.prizes__item--gold .prizes__cup {
+  width: 3.35rem;
+  animation: prize-glow 2.8s ease-in-out infinite;
+}
+
+.prizes__cup-bowl,
+.prizes__cup-handle,
+.prizes__cup-stem,
+.prizes__cup-base,
+.prizes__cup-plate {
+  fill: currentColor;
+}
+
+.prizes__cup-handle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.2;
+  stroke-linecap: round;
+}
+
+.prizes__cup--gold {
+  color: #f0c85a;
+}
+
+.prizes__cup--silver {
+  color: #c5cdd8;
+}
+
+.prizes__cup--bronze {
+  color: #c07a45;
+}
+
+@keyframes prize-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35))
+      drop-shadow(0 0 0 rgba(240, 200, 90, 0));
+  }
+
+  50% {
+    filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.4))
+      drop-shadow(0 0 12px rgba(240, 200, 90, 0.45));
+  }
+}
+
+.prizes__place {
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.prizes__amount {
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+  color: var(--text);
+}
+
+.prizes__item--gold .prizes__amount {
+  color: #f0c85a;
+  font-size: 1.08rem;
+}
+
+.prizes__item--silver .prizes__amount {
+  color: #d5dde7;
+}
+
+.prizes__item--bronze .prizes__amount {
+  color: #d0925c;
+}
+
 .button {
   display: inline-flex;
   align-items: center;
@@ -1200,6 +1301,32 @@ select {
 
   .section__text {
     font-size: 0.92rem;
+  }
+
+  .prizes {
+    gap: 0.75rem;
+    margin-bottom: 1.35rem;
+    padding: 0.5rem 0.25rem 0.75rem;
+  }
+
+  .prizes__item {
+    min-width: 4.5rem;
+  }
+
+  .prizes__cup {
+    width: 2.2rem;
+  }
+
+  .prizes__item--gold .prizes__cup {
+    width: 2.85rem;
+  }
+
+  .prizes__amount {
+    font-size: 0.85rem;
+  }
+
+  .prizes__item--gold .prizes__amount {
+    font-size: 0.95rem;
   }
 
   .panel {

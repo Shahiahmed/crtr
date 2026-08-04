@@ -133,14 +133,14 @@ export default function RegisterPage() {
             <>
               <div className="field">
                 <label className="field__label" htmlFor="manual-name">
-                  ФИО капитана
+                  Имя и фамилия капитана
                 </label>
                 <input
                   id="manual-name"
                   className="field__input"
                   value={manualFullName}
                   onChange={(event) => setManualFullName(event.target.value)}
-                  placeholder="Иванов Иван Иванович"
+                  placeholder="Шаһиахмед Асқар"
                   required
                 />
                 <p className="field__hint">Будет со статусом «Вручную» — не подтверждён.</p>

@@ -211,13 +211,14 @@ export default function ManageTeamPage() {
               <>
                 <div className="field">
                   <label className="field__label" htmlFor="add-name">
-                    ФИО
+                    Имя и фамилия
                   </label>
                   <input
                     id="add-name"
                     className="field__input"
                     value={manualFullName}
                     onChange={(event) => setManualFullName(event.target.value)}
+                    placeholder="Шаһиахмед Асқар"
                     required
                   />
                 </div>
