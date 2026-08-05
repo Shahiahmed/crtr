@@ -16,6 +16,7 @@ export default function ManageTeamPage() {
 
   const [team, setTeam] = useState<PublicTeam | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [infoMessage, setInfoMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [mode, setMode] = useState<AddMode>("directory");
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
@@ -23,6 +24,24 @@ export default function ManageTeamPage() {
   const [manualDepartment, setManualDepartment] = useState("");
   const [asSubstitute, setAsSubstitute] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSavingInfo, setIsSavingInfo] = useState(false);
+  const [editTeamName, setEditTeamName] = useState("");
+  const [editBlockName, setEditBlockName] = useState("");
+
+  const applyTeamState = useCallback(
+    (nextTeam: PublicTeam) => {
+      setTeam(nextTeam);
+      setManualDepartment(nextTeam.department);
+      setEditTeamName(nextTeam.name);
+      setEditBlockName(nextTeam.block || "");
+      saveCaptainSession({
+        manageToken: token,
+        manageUrl: `/manage/${token}`,
+        teamName: nextTeam.name,
+      });
+    },
+    [token],
+  );
 
   const loadTeam = useCallback(async () => {
     setIsLoading(true);
@@ -40,34 +59,65 @@ export default function ManageTeamPage() {
         throw new Error(payload.error || "Команда не найдена");
       }
 
-      setTeam(payload.team);
-      setManualDepartment(payload.team.department);
-      saveCaptainSession({
-        manageToken: token,
-        manageUrl: `/manage/${token}`,
-        teamName: payload.team.name,
-      });
+      applyTeamState(payload.team);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Ошибка загрузки");
     } finally {
       setIsLoading(false);
     }
-  }, [token]);
+  }, [applyTeamState, token]);
 
   useEffect(() => {
     void loadTeam();
   }, [loadTeam]);
 
-  async function handleAddMember(event: React.FormEvent<HTMLFormElement>) {
+  async function handleUpdateTeamInfo(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setIsSubmitting(true);
+    setIsSavingInfo(true);
     setErrorMessage("");
+    setInfoMessage("");
 
     try {
       const response = await fetch(`/api/manage/${token}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          action: "update-team",
+          teamName: editTeamName,
+          block: editBlockName,
+        }),
+      });
+
+      const payload = (await response.json()) as {
+        error?: string;
+        team?: PublicTeam;
+      };
+
+      if (!response.ok || !payload.team) {
+        throw new Error(payload.error || "Не удалось сохранить");
+      }
+
+      applyTeamState(payload.team);
+      setInfoMessage("Информация о команде сохранена.");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Ошибка");
+    } finally {
+      setIsSavingInfo(false);
+    }
+  }
+
+  async function handleAddMember(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setErrorMessage("");
+    setInfoMessage("");
+
+    try {
+      const response = await fetch(`/api/manage/${token}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "add-member",
           mode,
           employeeId: selectedEmployee?.id,
           manualFullName,
@@ -85,7 +135,7 @@ export default function ManageTeamPage() {
         throw new Error(payload.error || "Не удалось добавить");
       }
 
-      setTeam(payload.team);
+      applyTeamState(payload.team);
       setSelectedEmployee(null);
       setManualFullName("");
     } catch (error) {
@@ -97,6 +147,7 @@ export default function ManageTeamPage() {
 
   async function handleRemoveMember(memberId: string) {
     setErrorMessage("");
+    setInfoMessage("");
 
     const response = await fetch(`/api/manage/${token}?memberId=${memberId}`, {
       method: "DELETE",
@@ -111,7 +162,7 @@ export default function ManageTeamPage() {
       return;
     }
 
-    setTeam(payload.team);
+    applyTeamState(payload.team);
   }
 
   if (isLoading) {
@@ -161,6 +212,41 @@ export default function ManageTeamPage() {
             <span>запасных</span>
           </div>
         </div>
+
+        <form className="panel" onSubmit={handleUpdateTeamInfo} style={{ marginBottom: "1rem" }}>
+          <h2>Информация о команде</h2>
+          <div className="field">
+            <label className="field__label" htmlFor="edit-team-name">
+              Название команды
+            </label>
+            <input
+              id="edit-team-name"
+              className="field__input"
+              value={editTeamName}
+              onChange={(event) => setEditTeamName(event.target.value)}
+              required
+              maxLength={40}
+            />
+          </div>
+          <div className="field">
+            <label className="field__label" htmlFor="edit-team-block">
+              Блок
+            </label>
+            <input
+              id="edit-team-block"
+              className="field__input"
+              value={editBlockName}
+              onChange={(event) => setEditBlockName(event.target.value)}
+              required
+              maxLength={80}
+            />
+          </div>
+          {infoMessage ? <p className="field__hint">{infoMessage}</p> : null}
+          {errorMessage ? <p className="field__error">{errorMessage}</p> : null}
+          <button className="button" type="submit" disabled={isSavingInfo}>
+            {isSavingInfo ? "Сохраняем..." : "Сохранить информацию"}
+          </button>
+        </form>
 
         <div className="grid-2">
           <div>

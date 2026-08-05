@@ -185,7 +185,6 @@ export default function RegisterPage() {
               className="field__input"
               value={blockName}
               onChange={(event) => setBlockName(event.target.value)}
-              placeholder="Например: Блок 1 / Цифровизация"
               required
               maxLength={80}
             />

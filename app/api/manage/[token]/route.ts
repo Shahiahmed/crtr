@@ -17,11 +17,14 @@ type RouteContext = {
 };
 
 type AddMemberBody = {
+  action?: "add-member" | "update-team";
   mode?: "directory" | "manual";
   employeeId?: string;
   manualFullName?: string;
   manualDepartment?: string;
   asSubstitute?: boolean;
+  teamName?: string;
+  block?: string;
 };
 
 export async function GET(_request: Request, context: RouteContext) {
@@ -53,6 +56,61 @@ export async function POST(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Команда не найдена" }, { status: 404 });
     }
 
+    const body = (await request.json()) as AddMemberBody;
+    const action = body.action || "add-member";
+
+    if (action === "update-team") {
+      const teamName = body.teamName?.trim() || "";
+      const blockName = body.block?.trim() || "";
+
+      if (teamName.length < 2) {
+        return NextResponse.json(
+          { error: "Укажите название команды" },
+          { status: 400 },
+        );
+      }
+
+      if (teamName.length > 40) {
+        return NextResponse.json(
+          { error: "Название команды слишком длинное" },
+          { status: 400 },
+        );
+      }
+
+      if (blockName.length < 1) {
+        return NextResponse.json({ error: "Укажите блок" }, { status: 400 });
+      }
+
+      if (blockName.length > 80) {
+        return NextResponse.json(
+          { error: "Название блока слишком длинное" },
+          { status: 400 },
+        );
+      }
+
+      const normalizedTeamName = teamName.toLocaleLowerCase("ru-RU");
+      const hasDuplicateName = tournament.teams.some(
+        (team, index) =>
+          index !== teamIndex &&
+          team.name.trim().toLocaleLowerCase("ru-RU") === normalizedTeamName,
+      );
+
+      if (hasDuplicateName) {
+        return NextResponse.json(
+          { error: "Команда с таким названием уже есть" },
+          { status: 409 },
+        );
+      }
+
+      tournament.teams[teamIndex].name = teamName;
+      tournament.teams[teamIndex].block = blockName;
+      await saveTournament(tournament);
+
+      return NextResponse.json({
+        team: toPublicTeam(tournament.teams[teamIndex]),
+      });
+    }
+
     if (!tournament.settings.registrationOpen) {
       return NextResponse.json(
         { error: "Регистрация закрыта" },
@@ -60,7 +118,6 @@ export async function POST(request: Request, context: RouteContext) {
       );
     }
 
-    const body = (await request.json()) as AddMemberBody;
     const mode = body.mode || "directory";
     const asSubstitute = Boolean(body.asSubstitute);
     const team = tournament.teams[teamIndex];
