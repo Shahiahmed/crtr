@@ -1,19 +1,29 @@
 import employeesData from "@/data/employees.json";
 import type { Employee } from "@/lib/types";
 
-type EmployeesFile = {
+type EmployeesFileRaw = {
   departments: string[];
-  employees: Employee[];
+  employees: Array<{
+    id: string;
+    fullName: string;
+    department: string;
+  }>;
 };
 
-const employeesFile = employeesData as EmployeesFile;
+const employeesFile = employeesData as EmployeesFileRaw;
+
+const employees: Employee[] = employeesFile.employees.map((employee) => ({
+  id: employee.id,
+  fullName: employee.fullName,
+  department: employee.department,
+}));
 
 export function getDepartments(): string[] {
   return employeesFile.departments;
 }
 
 export function getEmployees(): Employee[] {
-  return employeesFile.employees;
+  return employees;
 }
 
 export function searchEmployees(query: string, limit = 12): Employee[] {
@@ -25,7 +35,7 @@ export function searchEmployees(query: string, limit = 12): Employee[] {
 
   const results: Employee[] = [];
 
-  for (const employee of employeesFile.employees) {
+  for (const employee of employees) {
     const fullName = employee.fullName.toLocaleLowerCase("ru-RU");
     const department = employee.department.toLocaleLowerCase("ru-RU");
 
@@ -42,5 +52,5 @@ export function searchEmployees(query: string, limit = 12): Employee[] {
 }
 
 export function findEmployeeById(employeeId: string): Employee | undefined {
-  return employeesFile.employees.find((employee) => employee.id === employeeId);
+  return employees.find((employee) => employee.id === employeeId);
 }

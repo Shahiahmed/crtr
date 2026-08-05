@@ -1,29 +1,10 @@
 import Link from "next/link";
 
 import { getTournament, toPublicLegionnaire, toPublicTeam } from "@/lib/db";
+import { formatPublicName } from "@/lib/names";
 import type { TeamMember } from "@/lib/types";
 
 export const revalidate = 5;
-
-function displayName(fullName: string, isFromDirectory: boolean): string {
-  const parts = fullName.trim().split(/\s+/).filter(Boolean);
-
-  if (parts.length === 0) {
-    return fullName;
-  }
-
-  if (parts.length === 1) {
-    return parts[0];
-  }
-
-  // Manual entry is already "FirstName Surname"
-  if (!isFromDirectory) {
-    return `${parts[0]} ${parts[1]}`;
-  }
-
-  // Directory format: Surname FirstName [Patronymic] → FirstName Surname
-  return `${parts[1]} ${parts[0]}`;
-}
 
 function roleLabel(role: TeamMember["role"]): string {
   if (role === "captain") {
@@ -86,7 +67,7 @@ export default async function TeamsPage() {
                       members.map((member) => (
                         <li key={member.id} className="teams-people__item">
                           <strong className="teams-people__name">
-                            {displayName(member.fullName, member.isConfirmed)}
+                            {formatPublicName(member.fullName, member.isConfirmed)}
                           </strong>
                           <span className="teams-people__role">
                             {roleLabel(member.role)}
@@ -140,7 +121,7 @@ export default async function TeamsPage() {
               {legionnaires.map((legionnaire) => (
                 <li key={legionnaire.id} className="legionnaires__item">
                   <strong className="legionnaires__name">
-                    {displayName(legionnaire.fullName, legionnaire.isConfirmed)}
+                    {formatPublicName(legionnaire.fullName, legionnaire.isConfirmed)}
                   </strong>
                   <span
                     className={`legionnaires__status ${legionnaire.isConfirmed ? "is-ok" : "is-manual"}`}

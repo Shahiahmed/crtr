@@ -2,6 +2,7 @@
 
 import { useDeferredValue, useEffect, useState } from "react";
 
+import { formatPublicName } from "@/lib/names";
 import type { Employee } from "@/lib/types";
 
 type EmployeePickerProps = {
@@ -62,9 +63,8 @@ export function EmployeePicker({
         <span className="field__label">{label}</span>
         <div className="picker-selected">
           <div>
-            <strong>{selectedEmployee.fullName}</strong>
+            <strong>{formatPublicName(selectedEmployee.fullName, true)}</strong>
             <p>{selectedEmployee.department}</p>
-            <small>{selectedEmployee.position}</small>
           </div>
           <button
             type="button"
@@ -91,7 +91,7 @@ export function EmployeePicker({
         className="field__input"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="Начните вводить ФИО..."
+        placeholder="Начните вводить фамилию или имя..."
         autoComplete="off"
       />
       {isLoading ? <p className="field__hint">Поиск...</p> : null}
@@ -107,7 +107,7 @@ export function EmployeePicker({
                   setResults([]);
                 }}
               >
-                <strong>{employee.fullName}</strong>
+                <strong>{formatPublicName(employee.fullName, true)}</strong>
                 <span>{employee.department}</span>
               </button>
             </li>
