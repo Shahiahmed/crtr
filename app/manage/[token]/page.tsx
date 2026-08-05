@@ -9,6 +9,8 @@ import { TEAM_BLOCKS } from "@/lib/blocks";
 import {
   claimCaptainSession,
   clearCaptainSessionIfToken,
+  readCaptainSession,
+  saveCaptainSession,
 } from "@/lib/captain-session";
 import type { Employee, PublicTeam } from "@/lib/types";
 
@@ -31,6 +33,12 @@ export default function ManageTeamPage() {
   const [isSavingInfo, setIsSavingInfo] = useState(false);
   const [editTeamName, setEditTeamName] = useState("");
   const [editBlockName, setEditBlockName] = useState("");
+  const [isPinnedAsMyTeam, setIsPinnedAsMyTeam] = useState(false);
+
+  const refreshPinnedState = useCallback(() => {
+    const session = readCaptainSession();
+    setIsPinnedAsMyTeam(session?.manageToken === token);
+  }, [token]);
 
   const applyTeamState = useCallback(
     (nextTeam: PublicTeam) => {
@@ -43,9 +51,24 @@ export default function ManageTeamPage() {
         manageUrl: `/manage/${token}`,
         teamName: nextTeam.name,
       });
+      refreshPinnedState();
     },
-    [token],
+    [refreshPinnedState, token],
   );
+
+  const pinAsMyTeam = useCallback(() => {
+    if (!team) {
+      return;
+    }
+
+    saveCaptainSession({
+      manageToken: token,
+      manageUrl: `/manage/${token}`,
+      teamName: team.name,
+    });
+    setIsPinnedAsMyTeam(true);
+    setInfoMessage("Команда закреплена: в меню снова есть «Моя команда».");
+  }, [team, token]);
 
   const loadTeam = useCallback(async () => {
     setIsLoading(true);
@@ -74,6 +97,10 @@ export default function ManageTeamPage() {
   useEffect(() => {
     void loadTeam();
   }, [loadTeam]);
+
+  useEffect(() => {
+    refreshPinnedState();
+  }, [refreshPinnedState]);
 
   async function handleUpdateTeamInfo(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -198,9 +225,19 @@ export default function ManageTeamPage() {
           {team.block ? `Блок: ${team.block}. ` : ""}
           {team.department}. Основа {team.starterCount}/5
           {team.isReady ? " — команда готова к жеребьёвке." : "."}
-          {" "}
-          Вернуться можно через подсвеченное меню «Моя команда».
         </p>
+
+        {!isPinnedAsMyTeam ? (
+          <div className="hero__actions" style={{ marginBottom: "1.25rem" }}>
+            <button type="button" className="button" onClick={pinAsMyTeam}>
+              Закрепить «Моя команда» в меню
+            </button>
+          </div>
+        ) : (
+          <p className="field__hint" style={{ marginBottom: "1.25rem" }}>
+            Эта команда закреплена в меню как «Моя команда».
+          </p>
+        )}
 
         <div className="stats-row">
           <div className="stat">

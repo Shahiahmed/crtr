@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 
 import {
   CAPTAIN_SESSION_EVENT,
@@ -38,6 +38,10 @@ export function SiteHeader() {
     };
   }, [isMenuOpen]);
 
+  useLayoutEffect(() => {
+    setCaptainSession(readCaptainSession());
+  }, [pathname]);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -52,6 +56,7 @@ export function SiteHeader() {
     void refreshCaptainSession();
 
     const handleSessionChange = () => {
+      setCaptainSession(readCaptainSession());
       void refreshCaptainSession();
     };
 
@@ -63,7 +68,7 @@ export function SiteHeader() {
       window.removeEventListener(CAPTAIN_SESSION_EVENT, handleSessionChange);
       window.removeEventListener("storage", handleSessionChange);
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <header className="site-header">
