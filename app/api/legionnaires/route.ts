@@ -19,8 +19,27 @@ type CreateLegionnaireBody = {
   manualDepartment?: string;
 };
 
-export async function GET() {
+export async function GET(request: Request) {
   const tournament = await getTournament();
+  const { searchParams } = new URL(request.url);
+  const manageToken = searchParams.get("token");
+
+  if (manageToken) {
+    const legionnaire = tournament.legionnaires.find(
+      (item) => item.manageToken === manageToken,
+    );
+
+    if (!legionnaire) {
+      return NextResponse.json(
+        { error: "Заявка легионера не найдена" },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json({
+      legionnaire: toPublicLegionnaire(legionnaire),
+    });
+  }
 
   return NextResponse.json({
     legionnaires: tournament.legionnaires.map(toPublicLegionnaire),

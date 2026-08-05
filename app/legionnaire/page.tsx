@@ -21,16 +21,64 @@ export default function LegionnairePage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [registeredName, setRegisteredName] = useState("");
   const [manageToken, setManageToken] = useState("");
 
   useEffect(() => {
-    const session = readLegionnaireSession();
+    let isMounted = true;
 
-    if (session) {
-      setRegisteredName(session.fullName);
-      setManageToken(session.manageToken);
+    async function syncSession() {
+      const session = readLegionnaireSession();
+
+      if (!session) {
+        if (isMounted) {
+          setIsCheckingSession(false);
+        }
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `/api/legionnaires?token=${encodeURIComponent(session.manageToken)}`,
+        );
+
+        if (!response.ok) {
+          clearLegionnaireSession();
+
+          if (isMounted) {
+            setRegisteredName("");
+            setManageToken("");
+          }
+
+          return;
+        }
+
+        const payload = (await response.json()) as {
+          legionnaire?: { fullName?: string };
+        };
+
+        if (isMounted) {
+          setRegisteredName(payload.legionnaire?.fullName || session.fullName);
+          setManageToken(session.manageToken);
+        }
+      } catch {
+        if (isMounted) {
+          setRegisteredName(session.fullName);
+          setManageToken(session.manageToken);
+        }
+      } finally {
+        if (isMounted) {
+          setIsCheckingSession(false);
+        }
+      }
     }
+
+    void syncSession();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -63,12 +111,22 @@ export default function LegionnairePage() {
       const nextName = payload.legionnaire?.fullName || "";
       const nextToken = payload.manageToken || "";
 
-      if (nextToken && nextName) {
-        saveLegionnaireSession({
-          manageToken: nextToken,
-          fullName: nextName,
-        });
+      if (!nextToken || !nextName) {
+        throw new Error("Сервер не подтвердил заявку. Попробуйте ещё раз.");
       }
+
+      const verifyResponse = await fetch(
+        `/api/legionnaires?token=${encodeURIComponent(nextToken)}`,
+      );
+
+      if (!verifyResponse.ok) {
+        throw new Error("Заявка не сохранилась. Попробуйте ещё раз.");
+      }
+
+      saveLegionnaireSession({
+        manageToken: nextToken,
+        fullName: nextName,
+      });
 
       setRegisteredName(nextName);
       setManageToken(nextToken);
@@ -88,9 +146,10 @@ export default function LegionnairePage() {
     setErrorMessage("");
 
     try {
-      const response = await fetch(`/api/legionnaires?token=${manageToken}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `/api/legionnaires?token=${encodeURIComponent(manageToken)}`,
+        { method: "DELETE" },
+      );
       const payload = (await response.json()) as { error?: string };
 
       if (!response.ok) {
@@ -105,6 +164,14 @@ export default function LegionnairePage() {
     } finally {
       setIsRemoving(false);
     }
+  }
+
+  if (isCheckingSession) {
+    return (
+      <main className="page">
+        <p className="muted">Проверяем заявку...</p>
+      </main>
+    );
   }
 
   if (registeredName && manageToken) {
