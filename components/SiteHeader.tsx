@@ -13,6 +13,7 @@ import {
 const NAV_ITEMS = [
   { href: "/", label: "Главная" },
   { href: "/register", label: "Создать команду" },
+  { href: "/legionnaire", label: "Легионер" },
   { href: "/teams", label: "Команды" },
   { href: "/bracket", label: "Сетка" },
   { href: "/admin", label: "Админ" },

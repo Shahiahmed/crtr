@@ -952,6 +952,81 @@ select {
   white-space: nowrap;
 }
 
+.legionnaires {
+  margin-top: 1.25rem;
+}
+
+.legionnaires__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.legionnaires__title {
+  margin: 0 0 0.35rem;
+}
+
+.legionnaires__text {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  max-width: 36rem;
+}
+
+.legionnaires__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.legionnaires__item {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.9fr) 96px minmax(0, 1.8fr);
+  gap: 0.55rem;
+  align-items: center;
+  padding: 0.55rem 0.2rem;
+  border-top: 1px solid var(--line-soft);
+  min-width: 0;
+}
+
+.legionnaires__item:first-child {
+  border-top: 0;
+  padding-top: 0.15rem;
+}
+
+.legionnaires__name {
+  min-width: 0;
+  font-size: 0.88rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legionnaires__status {
+  font-size: 0.76rem;
+}
+
+.legionnaires__status.is-ok {
+  color: #9cbc66;
+}
+
+.legionnaires__status.is-manual {
+  color: var(--warn);
+}
+
+.legionnaires__department {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .team-card {
   border: 1px solid var(--line-soft);
   background: rgba(18, 18, 20, 0.95);
@@ -1485,6 +1560,20 @@ select {
 
   .teams-table__name {
     font-size: 0.92rem;
+  }
+
+  .legionnaires__top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .legionnaires__item {
+    grid-template-columns: minmax(100px, 1fr) 88px;
+    gap: 0.35rem 0.55rem;
+  }
+
+  .legionnaires__department {
+    grid-column: 1 / -1;
   }
 
   .bracket-groups {

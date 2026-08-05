@@ -6,6 +6,7 @@ import {
   getTournament,
   isPersonAlreadyRegistered,
   MAIN_ROSTER_SIZE,
+  removeMatchingLegionnaires,
   saveTournament,
   toPublicTeam,
 } from "@/lib/db";
@@ -191,6 +192,7 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     tournament.teams[teamIndex].members.push(member);
+    removeMatchingLegionnaires(tournament, member.fullName, member.employeeId);
     tournament.bracket = null;
     await saveTournament(tournament);
 

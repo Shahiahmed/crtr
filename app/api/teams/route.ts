@@ -5,6 +5,7 @@ import {
   createManageToken,
   getTournament,
   isPersonAlreadyRegistered,
+  removeMatchingLegionnaires,
   saveTournament,
   toPublicTeam,
 } from "@/lib/db";
@@ -152,6 +153,7 @@ export async function POST(request: Request) {
     };
 
     tournament.teams.push(team);
+    removeMatchingLegionnaires(tournament, captain.fullName, captain.employeeId);
     tournament.bracket = null;
     await saveTournament(tournament);
 

@@ -1,4 +1,6 @@
-import { getTournament, toPublicTeam } from "@/lib/db";
+import Link from "next/link";
+
+import { getTournament, toPublicLegionnaire, toPublicTeam } from "@/lib/db";
 import type { TeamMember } from "@/lib/types";
 
 export const revalidate = 5;
@@ -46,6 +48,7 @@ function sortMembers(members: TeamMember[]): TeamMember[] {
 export default async function TeamsPage() {
   const tournament = await getTournament();
   const teams = tournament.teams.map(toPublicTeam);
+  const legionnaires = tournament.legionnaires.map(toPublicLegionnaire);
 
   return (
     <main className="page">
@@ -93,7 +96,10 @@ export default async function TeamsPage() {
                           >
                             {member.isConfirmed ? "Справочник" : "Вручную"}
                           </span>
-                          <span className="teams-people__department" title={member.department}>
+                          <span
+                            className="teams-people__department"
+                            title={member.department}
+                          >
                             {member.department}
                           </span>
                         </li>
@@ -113,6 +119,45 @@ export default async function TeamsPage() {
             })}
           </div>
         )}
+
+        <div className="legionnaires panel">
+          <div className="legionnaires__top">
+            <div>
+              <h2 className="legionnaires__title">Легионеры</h2>
+              <p className="legionnaires__text">
+                Игроки без команды. Капитаны могут пригласить их в состав.
+              </p>
+            </div>
+            <Link href="/legionnaire" className="button button--ghost">
+              Я без команды
+            </Link>
+          </div>
+
+          {legionnaires.length === 0 ? (
+            <p className="muted">Пока никого нет.</p>
+          ) : (
+            <ul className="legionnaires__list">
+              {legionnaires.map((legionnaire) => (
+                <li key={legionnaire.id} className="legionnaires__item">
+                  <strong className="legionnaires__name">
+                    {displayName(legionnaire.fullName, legionnaire.isConfirmed)}
+                  </strong>
+                  <span
+                    className={`legionnaires__status ${legionnaire.isConfirmed ? "is-ok" : "is-manual"}`}
+                  >
+                    {legionnaire.isConfirmed ? "Справочник" : "Вручную"}
+                  </span>
+                  <span
+                    className="legionnaires__department"
+                    title={legionnaire.department}
+                  >
+                    {legionnaire.department}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </section>
     </main>
   );

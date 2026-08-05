@@ -62,8 +62,21 @@ export type TournamentSettings = {
   companyName: string;
 };
 
+export type Legionnaire = {
+  id: string;
+  fullName: string;
+  department: string;
+  isConfirmed: boolean;
+  employeeId: string | null;
+  manageToken: string;
+  createdAt: string;
+};
+
+export type PublicLegionnaire = Omit<Legionnaire, "manageToken">;
+
 export type TournamentData = {
   teams: Team[];
+  legionnaires: Legionnaire[];
   bracket: Bracket | null;
   settings: TournamentSettings;
 };

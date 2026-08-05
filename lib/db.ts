@@ -4,6 +4,8 @@ import path from "path";
 import { Redis } from "@upstash/redis";
 
 import type {
+  Legionnaire,
+  PublicLegionnaire,
   PublicTeam,
   Team,
   TeamMember,
@@ -23,11 +25,26 @@ let memoryCache: { data: TournamentData; expiresAt: number } | null = null;
 function createEmptyTournament(): TournamentData {
   return {
     teams: [],
+    legionnaires: [],
     bracket: null,
     settings: {
       registrationOpen: true,
       tournamentName: "ЦРТР CS Tournament",
       companyName: "АО «ЦРТР»",
+    },
+  };
+}
+
+function normalizeTournament(data: TournamentData): TournamentData {
+  return {
+    ...createEmptyTournament(),
+    ...data,
+    teams: Array.isArray(data.teams) ? data.teams : [],
+    legionnaires: Array.isArray(data.legionnaires) ? data.legionnaires : [],
+    bracket: data.bracket ?? null,
+    settings: {
+      ...createEmptyTournament().settings,
+      ...(data.settings || {}),
     },
   };
 }
@@ -79,12 +96,12 @@ export async function getTournament(): Promise<TournamentData> {
 
   if (redisClient) {
     const storedValue = await redisClient.get<TournamentData>(REDIS_KEY);
-    tournamentData = storedValue ?? createEmptyTournament();
+    tournamentData = normalizeTournament(storedValue ?? createEmptyTournament());
   } else if (process.env.VERCEL) {
     // Vercel filesystem is read-only; without Redis return empty safe state.
     tournamentData = createEmptyTournament();
   } else {
-    tournamentData = readTournamentFromFile();
+    tournamentData = normalizeTournament(readTournamentFromFile());
   }
 
   memoryCache = {
@@ -96,15 +113,17 @@ export async function getTournament(): Promise<TournamentData> {
 }
 
 export async function saveTournament(data: TournamentData): Promise<void> {
+  const normalizedData = normalizeTournament(data);
+
   memoryCache = {
-    data,
+    data: normalizedData,
     expiresAt: Date.now() + MEMORY_CACHE_TTL_MS,
   };
 
   const redisClient = getRedisClient();
 
   if (redisClient) {
-    await redisClient.set(REDIS_KEY, data);
+    await redisClient.set(REDIS_KEY, normalizedData);
     return;
   }
 
@@ -114,7 +133,7 @@ export async function saveTournament(data: TournamentData): Promise<void> {
     );
   }
 
-  writeTournamentToFile(data);
+  writeTournamentToFile(normalizedData);
 }
 
 export function getStarterMembers(team: Team): TeamMember[] {
@@ -164,21 +183,75 @@ export async function findTeamByManageToken(
   return tournament.teams.find((team) => team.manageToken === manageToken);
 }
 
+function isSamePerson(
+  fullName: string,
+  employeeId: string | null,
+  candidateFullName: string,
+  candidateEmployeeId: string | null,
+): boolean {
+  if (employeeId && candidateEmployeeId && employeeId === candidateEmployeeId) {
+    return true;
+  }
+
+  return (
+    candidateFullName.trim().toLocaleLowerCase("ru-RU") ===
+    fullName.trim().toLocaleLowerCase("ru-RU")
+  );
+}
+
 export async function isPersonAlreadyRegistered(
   fullName: string,
   employeeId: string | null,
 ): Promise<boolean> {
-  const normalizedName = fullName.trim().toLocaleLowerCase("ru-RU");
   const tournament = await getTournament();
 
   return tournament.teams.some((team) =>
-    team.members.some((member) => {
-      if (employeeId && member.employeeId === employeeId) {
-        return true;
-      }
+    team.members.some((member) =>
+      isSamePerson(fullName, employeeId, member.fullName, member.employeeId),
+    ),
+  );
+}
 
-      return member.fullName.trim().toLocaleLowerCase("ru-RU") === normalizedName;
-    }),
+export async function isPersonLegionnaire(
+  fullName: string,
+  employeeId: string | null,
+): Promise<boolean> {
+  const tournament = await getTournament();
+
+  return tournament.legionnaires.some((legionnaire) =>
+    isSamePerson(
+      fullName,
+      employeeId,
+      legionnaire.fullName,
+      legionnaire.employeeId,
+    ),
+  );
+}
+
+export function toPublicLegionnaire(legionnaire: Legionnaire): PublicLegionnaire {
+  return {
+    id: legionnaire.id,
+    fullName: legionnaire.fullName,
+    department: legionnaire.department,
+    isConfirmed: legionnaire.isConfirmed,
+    employeeId: legionnaire.employeeId,
+    createdAt: legionnaire.createdAt,
+  };
+}
+
+export function removeMatchingLegionnaires(
+  tournament: TournamentData,
+  fullName: string,
+  employeeId: string | null,
+): void {
+  tournament.legionnaires = tournament.legionnaires.filter(
+    (legionnaire) =>
+      !isSamePerson(
+        fullName,
+        employeeId,
+        legionnaire.fullName,
+        legionnaire.employeeId,
+      ),
   );
 }
 
