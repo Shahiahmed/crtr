@@ -18,9 +18,10 @@ export { createEntityId, createManageToken };
 const DATA_PATH = path.join(process.cwd(), "data", "tournament.json");
 const REDIS_KEY = "crtr:tournament";
 const MAIN_ROSTER_SIZE = 5;
-const MEMORY_CACHE_TTL_MS = 2000;
+const MEMORY_CACHE_TTL_MS = 15000;
 
 let memoryCache: { data: TournamentData; expiresAt: number } | null = null;
+let redisClient: Redis | null | undefined;
 
 function createEmptyTournament(): TournamentData {
   return {
@@ -56,11 +57,17 @@ function hasRedisConfig(): boolean {
 }
 
 function getRedisClient(): Redis | null {
+  if (redisClient !== undefined) {
+    return redisClient;
+  }
+
   if (!hasRedisConfig()) {
+    redisClient = null;
     return null;
   }
 
-  return Redis.fromEnv();
+  redisClient = Redis.fromEnv();
+  return redisClient;
 }
 
 function readTournamentFromFile(): TournamentData {

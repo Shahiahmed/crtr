@@ -57,7 +57,6 @@ export function SiteHeader() {
 
     const handleSessionChange = () => {
       setCaptainSession(readCaptainSession());
-      void refreshCaptainSession();
     };
 
     window.addEventListener(CAPTAIN_SESSION_EVENT, handleSessionChange);
@@ -68,7 +67,7 @@ export function SiteHeader() {
       window.removeEventListener(CAPTAIN_SESSION_EVENT, handleSessionChange);
       window.removeEventListener("storage", handleSessionChange);
     };
-  }, [pathname]);
+  }, []);
 
   return (
     <header className="site-header">
