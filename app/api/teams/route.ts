@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { isValidTeamBlock } from "@/lib/blocks";
 import {
   createEntityId,
   createManageToken,
@@ -54,9 +55,9 @@ export async function POST(request: Request) {
       );
     }
 
-    if (blockName.length < 1 || blockName.length > 80) {
+    if (!isValidTeamBlock(blockName)) {
       return NextResponse.json(
-        { error: "Укажите блок (до 80 символов)" },
+        { error: "Выберите блок из списка" },
         { status: 400 },
       );
     }

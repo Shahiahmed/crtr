@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { EmployeePicker } from "@/components/EmployeePicker";
+import { TEAM_BLOCKS } from "@/lib/blocks";
 import { saveCaptainSession } from "@/lib/captain-session";
 import type { Employee } from "@/lib/types";
 
@@ -180,14 +181,22 @@ export default function RegisterPage() {
             <label className="field__label" htmlFor="team-block">
               Блок
             </label>
-            <input
+            <select
               id="team-block"
               className="field__input"
               value={blockName}
               onChange={(event) => setBlockName(event.target.value)}
               required
-              maxLength={80}
-            />
+            >
+              <option value="" disabled>
+                Выберите блок
+              </option>
+              {TEAM_BLOCKS.map((blockOption) => (
+                <option key={blockOption} value={blockOption}>
+                  {blockOption}
+                </option>
+              ))}
+            </select>
           </div>
 
           {errorMessage ? <p className="field__error">{errorMessage}</p> : null}

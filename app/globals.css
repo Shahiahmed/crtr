@@ -692,6 +692,38 @@ select {
   clip-path: var(--clip-button);
 }
 
+.field select {
+  appearance: none;
+  color-scheme: dark;
+  padding-right: 2.4rem;
+  cursor: pointer;
+  background-color: #141416;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--accent) 50%),
+    linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.15rem) 54%,
+    calc(100% - 0.75rem) 54%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.field select:invalid,
+.field select option[value=""] {
+  color: var(--muted);
+}
+
+.field select option {
+  background-color: #141416;
+  color: var(--text);
+}
+
+.field select option:checked,
+.field select option:hover {
+  background-color: #2a2114;
+  color: var(--accent-hot);
+}
+
 .field__input:focus,
 .field select:focus {
   border-color: rgba(222, 155, 53, 0.7);

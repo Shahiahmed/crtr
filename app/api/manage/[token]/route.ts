@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { isValidTeamBlock } from "@/lib/blocks";
 import {
   createEntityId,
   getStarterMembers,
@@ -78,13 +79,9 @@ export async function POST(request: Request, context: RouteContext) {
         );
       }
 
-      if (blockName.length < 1) {
-        return NextResponse.json({ error: "Укажите блок" }, { status: 400 });
-      }
-
-      if (blockName.length > 80) {
+      if (!isValidTeamBlock(blockName)) {
         return NextResponse.json(
-          { error: "Название блока слишком длинное" },
+          { error: "Выберите блок из списка" },
           { status: 400 },
         );
       }

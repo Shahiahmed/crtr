@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { EmployeePicker } from "@/components/EmployeePicker";
 import { MemberList } from "@/components/MemberList";
+import { TEAM_BLOCKS } from "@/lib/blocks";
 import { clearCaptainSession, saveCaptainSession } from "@/lib/captain-session";
 import type { Employee, PublicTeam } from "@/lib/types";
 
@@ -232,14 +233,26 @@ export default function ManageTeamPage() {
             <label className="field__label" htmlFor="edit-team-block">
               Блок
             </label>
-            <input
+            <select
               id="edit-team-block"
               className="field__input"
-              value={editBlockName}
+              value={
+                TEAM_BLOCKS.includes(editBlockName as (typeof TEAM_BLOCKS)[number])
+                  ? editBlockName
+                  : ""
+              }
               onChange={(event) => setEditBlockName(event.target.value)}
               required
-              maxLength={80}
-            />
+            >
+              <option value="" disabled>
+                Выберите блок
+              </option>
+              {TEAM_BLOCKS.map((blockOption) => (
+                <option key={blockOption} value={blockOption}>
+                  {blockOption}
+                </option>
+              ))}
+            </select>
           </div>
           {infoMessage ? <p className="field__hint">{infoMessage}</p> : null}
           {errorMessage ? <p className="field__error">{errorMessage}</p> : null}
