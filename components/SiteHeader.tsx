@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import {
   CAPTAIN_SESSION_EVENT,
+  readCaptainSession,
   syncCaptainSession,
   type CaptainSession,
 } from "@/lib/captain-session";
@@ -111,12 +112,18 @@ export function SiteHeader() {
 
           {captainSession ? (
             <Link
-              href={captainSession.manageUrl}
+              href="/my-team"
               className={`site-header__my-team${pathname.startsWith("/manage") || pathname === "/my-team" ? " is-active" : ""}`}
               onClick={(event) => {
                 event.preventDefault();
                 setIsMenuOpen(false);
-                router.push(captainSession.manageUrl);
+
+                const freshSession = readCaptainSession();
+                router.push(
+                  freshSession
+                    ? `/manage/${freshSession.manageToken}`
+                    : "/my-team",
+                );
               }}
             >
               Моя команда

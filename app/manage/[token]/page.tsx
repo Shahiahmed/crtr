@@ -6,7 +6,10 @@ import { useCallback, useEffect, useState } from "react";
 import { EmployeePicker } from "@/components/EmployeePicker";
 import { MemberList } from "@/components/MemberList";
 import { TEAM_BLOCKS } from "@/lib/blocks";
-import { clearCaptainSession, saveCaptainSession } from "@/lib/captain-session";
+import {
+  claimCaptainSession,
+  clearCaptainSessionIfToken,
+} from "@/lib/captain-session";
 import type { Employee, PublicTeam } from "@/lib/types";
 
 type AddMode = "directory" | "manual";
@@ -35,7 +38,7 @@ export default function ManageTeamPage() {
       setManualDepartment(nextTeam.department);
       setEditTeamName(nextTeam.name);
       setEditBlockName(nextTeam.block || "");
-      saveCaptainSession({
+      claimCaptainSession({
         manageToken: token,
         manageUrl: `/manage/${token}`,
         teamName: nextTeam.name,
@@ -56,7 +59,7 @@ export default function ManageTeamPage() {
       };
 
       if (!response.ok || !payload.team) {
-        clearCaptainSession();
+        clearCaptainSessionIfToken(token);
         throw new Error(payload.error || "Команда не найдена");
       }
 
