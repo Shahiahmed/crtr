@@ -103,6 +103,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ bracket: tournament.bracket });
     }
 
+    if (body.action === "clear-bracket") {
+      tournament.bracket = null;
+      await saveTournament(tournament);
+
+      return NextResponse.json({ bracket: null });
+    }
+
     if (body.action === "set-winner") {
       if (!tournament.bracket || !body.matchId || !body.winnerId) {
         return NextResponse.json(

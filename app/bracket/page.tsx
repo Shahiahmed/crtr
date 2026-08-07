@@ -99,6 +99,7 @@ export default async function BracketPage() {
           {new Date(bracket.createdAt).toLocaleString("ru-RU", {
             dateStyle: "medium",
             timeStyle: "short",
+            timeZone: "Asia/Almaty",
           })}
           . Участвует команд: {bracket.teamIds.length}. Формат: группы →
           полуфинал → финал и матч за 3 место.

@@ -162,6 +162,24 @@ export default function AdminPage() {
           >
             Запустить жеребьёвку
           </button>
+          <button
+            type="button"
+            className="button button--ghost"
+            disabled={isBusy || !state.bracket}
+            onClick={() => {
+              const isConfirmed = window.confirm(
+                "Сбросить сетку? Группы, матчи и результаты будут удалены. Команды останутся.",
+              );
+
+              if (!isConfirmed) {
+                return;
+              }
+
+              void runAction({ action: "clear-bracket" });
+            }}
+          >
+            Сбросить сетку
+          </button>
           <Link href="/bracket" className="button button--ghost">
             Открыть сетку
           </Link>
