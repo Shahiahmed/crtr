@@ -33,6 +33,8 @@ function createEmptyTournament(): TournamentData {
       tournamentName: "ЦРТР CS Tournament",
       companyName: "АО «ЦРТР»",
       formatVotingOpen: false,
+      showBracketNav: true,
+      showFormatNav: true,
     },
     formatPoll: {
       votes: [],
@@ -54,6 +56,12 @@ function normalizeTournament(data: TournamentData): TournamentData {
       ...(data.settings || {}),
       formatVotingOpen: Boolean(
         data.settings?.formatVotingOpen ?? emptyTournament.settings.formatVotingOpen,
+      ),
+      showBracketNav: Boolean(
+        data.settings?.showBracketNav ?? emptyTournament.settings.showBracketNav,
+      ),
+      showFormatNav: Boolean(
+        data.settings?.showFormatNav ?? emptyTournament.settings.showFormatNav,
       ),
     },
     formatPoll: {

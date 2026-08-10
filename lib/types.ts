@@ -61,6 +61,8 @@ export type TournamentSettings = {
   tournamentName: string;
   companyName: string;
   formatVotingOpen: boolean;
+  showBracketNav: boolean;
+  showFormatNav: boolean;
 };
 
 export type FormatVote = {

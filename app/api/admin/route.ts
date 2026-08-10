@@ -95,6 +95,8 @@ export async function POST(request: Request) {
       password?: string;
       registrationOpen?: boolean;
       formatVotingOpen?: boolean;
+      showBracketNav?: boolean;
+      showFormatNav?: boolean;
       matchId?: string;
       winnerId?: string;
       teamId?: string;
@@ -144,6 +146,19 @@ export async function POST(request: Request) {
 
     if (body.action === "toggle-format-voting") {
       tournament.settings.formatVotingOpen = Boolean(body.formatVotingOpen);
+      await saveTournament(tournament);
+      return NextResponse.json({ settings: tournament.settings });
+    }
+
+    if (body.action === "toggle-nav-visibility") {
+      if (typeof body.showBracketNav === "boolean") {
+        tournament.settings.showBracketNav = body.showBracketNav;
+      }
+
+      if (typeof body.showFormatNav === "boolean") {
+        tournament.settings.showFormatNav = body.showFormatNav;
+      }
+
       await saveTournament(tournament);
       return NextResponse.json({ settings: tournament.settings });
     }

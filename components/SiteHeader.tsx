@@ -11,21 +11,36 @@ import {
   type CaptainSession,
 } from "@/lib/captain-session";
 
-const NAV_ITEMS = [
+type NavItem = {
+  href: string;
+  label: string;
+  navKey?: "bracket" | "format";
+};
+
+const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Главная" },
   { href: "/register", label: "Создать команду" },
   { href: "/legionnaire", label: "Легионер" },
   { href: "/teams", label: "Команды" },
-  { href: "/vote", label: "Формат" },
-  { href: "/bracket", label: "Сетка" },
+  { href: "/vote", label: "Формат", navKey: "format" },
+  { href: "/bracket", label: "Сетка", navKey: "bracket" },
   { href: "/admin", label: "Админ" },
 ];
+
+type NavVisibility = {
+  showBracketNav: boolean;
+  showFormatNav: boolean;
+};
 
 export function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [captainSession, setCaptainSession] = useState<CaptainSession | null>(null);
+  const [navVisibility, setNavVisibility] = useState<NavVisibility>({
+    showBracketNav: true,
+    showFormatNav: true,
+  });
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -70,6 +85,51 @@ export function SiteHeader() {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadNavVisibility() {
+      try {
+        const response = await fetch("/api/settings");
+        const payload = (await response.json()) as Partial<NavVisibility>;
+
+        if (!isMounted) {
+          return;
+        }
+
+        setNavVisibility({
+          showBracketNav: payload.showBracketNav !== false,
+          showFormatNav: payload.showFormatNav !== false,
+        });
+      } catch {
+        // Keep defaults if settings request fails.
+      }
+    }
+
+    void loadNavVisibility();
+
+    const intervalId = window.setInterval(() => {
+      void loadNavVisibility();
+    }, 20000);
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(intervalId);
+    };
+  }, [pathname]);
+
+  const visibleNavItems = NAV_ITEMS.filter((item) => {
+    if (item.navKey === "bracket") {
+      return navVisibility.showBracketNav;
+    }
+
+    if (item.navKey === "format") {
+      return navVisibility.showFormatNav;
+    }
+
+    return true;
+  });
+
   return (
     <header className="site-header">
       <div className="site-header__inner">
@@ -97,7 +157,7 @@ export function SiteHeader() {
           className={`site-header__nav${isMenuOpen ? " is-open" : ""}`}
           aria-label="Основная навигация"
         >
-          {NAV_ITEMS.map((item) => {
+          {visibleNavItems.map((item) => {
             const isActive =
               item.href === "/"
                 ? pathname === "/"

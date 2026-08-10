@@ -149,6 +149,14 @@ export default function AdminPage() {
             <strong>{state.settings?.formatVotingOpen ? "ON" : "OFF"}</strong>
             <span>голос формат</span>
           </div>
+          <div className="stat">
+            <strong>{state.settings?.showFormatNav !== false ? "SHOW" : "HIDE"}</strong>
+            <span>меню Формат</span>
+          </div>
+          <div className="stat">
+            <strong>{state.settings?.showBracketNav !== false ? "SHOW" : "HIDE"}</strong>
+            <span>меню Сетка</span>
+          </div>
         </div>
 
         <div className="hero__actions" style={{ marginBottom: "1.5rem" }}>
@@ -179,6 +187,36 @@ export default function AdminPage() {
             {state.settings?.formatVotingOpen
               ? "Закрыть голосование за формат"
               : "Открыть голосование за формат"}
+          </button>
+          <button
+            type="button"
+            className="button"
+            disabled={isBusy}
+            onClick={() =>
+              void runAction({
+                action: "toggle-nav-visibility",
+                showFormatNav: !(state.settings?.showFormatNav !== false),
+              })
+            }
+          >
+            {state.settings?.showFormatNav !== false
+              ? "Скрыть «Формат» в меню"
+              : "Показать «Формат» в меню"}
+          </button>
+          <button
+            type="button"
+            className="button"
+            disabled={isBusy}
+            onClick={() =>
+              void runAction({
+                action: "toggle-nav-visibility",
+                showBracketNav: !(state.settings?.showBracketNav !== false),
+              })
+            }
+          >
+            {state.settings?.showBracketNav !== false
+              ? "Скрыть «Сетка» в меню"
+              : "Показать «Сетка» в меню"}
           </button>
           <button
             type="button"
