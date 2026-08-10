@@ -60,6 +60,32 @@ export type TournamentSettings = {
   registrationOpen: boolean;
   tournamentName: string;
   companyName: string;
+  formatVotingOpen: boolean;
+};
+
+export type FormatVote = {
+  id: string;
+  voterKey: string;
+  voterName: string;
+  department: string;
+  employeeId: string | null;
+  isConfirmed: boolean;
+  teamName: string;
+  formatId: string;
+  createdAt: string;
+};
+
+export type PublicFormatVote = {
+  voterName: string;
+  department: string;
+  isConfirmed: boolean;
+  teamName: string;
+  formatId: string;
+  createdAt: string;
+};
+
+export type FormatPoll = {
+  votes: FormatVote[];
 };
 
 export type Legionnaire = {
@@ -79,6 +105,7 @@ export type TournamentData = {
   legionnaires: Legionnaire[];
   bracket: Bracket | null;
   settings: TournamentSettings;
+  formatPoll: FormatPoll;
 };
 
 export type Employee = {

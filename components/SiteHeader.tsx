@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { href: "/register", label: "Создать команду" },
   { href: "/legionnaire", label: "Легионер" },
   { href: "/teams", label: "Команды" },
+  { href: "/vote", label: "Формат" },
   { href: "/bracket", label: "Сетка" },
   { href: "/admin", label: "Админ" },
 ];

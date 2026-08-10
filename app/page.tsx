@@ -29,6 +29,9 @@ export default async function HomePage() {
               <Link href="/register" className="button">
                 Создать команду
               </Link>
+              <Link href="/vote" className="button button--ghost">
+                Голосовать за формат
+              </Link>
               <Link href="/legionnaire" className="button button--ghost">
                 Я без команды
               </Link>

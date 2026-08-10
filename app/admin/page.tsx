@@ -4,15 +4,32 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import BracketBoard from "@/components/BracketBoard";
+import { TOURNAMENT_FORMATS } from "@/lib/formats";
+import { formatPublicName } from "@/lib/names";
 import type { Bracket, PublicTeam, TournamentSettings } from "@/lib/types";
 
 type AdminTeam = PublicTeam & { manageToken: string };
+
+type AdminFormatPoll = {
+  totalVotes: number;
+  counts: Record<string, number>;
+  votes: Array<{
+    id: string;
+    voterName: string;
+    department: string;
+    isConfirmed: boolean;
+    teamName: string;
+    formatId: string;
+    createdAt: string;
+  }>;
+};
 
 type AdminState = {
   authenticated: boolean;
   settings?: TournamentSettings;
   teams?: AdminTeam[];
   bracket?: Bracket | null;
+  formatPoll?: AdminFormatPoll;
 };
 
 export default function AdminPage() {
@@ -128,6 +145,10 @@ export default function AdminPage() {
             <strong>{state.settings?.registrationOpen ? "ON" : "OFF"}</strong>
             <span>регистрация</span>
           </div>
+          <div className="stat">
+            <strong>{state.settings?.formatVotingOpen ? "ON" : "OFF"}</strong>
+            <span>голос формат</span>
+          </div>
         </div>
 
         <div className="hero__actions" style={{ marginBottom: "1.5rem" }}>
@@ -143,6 +164,21 @@ export default function AdminPage() {
             }
           >
             {state.settings?.registrationOpen ? "Закрыть регистрацию" : "Открыть регистрацию"}
+          </button>
+          <button
+            type="button"
+            className="button"
+            disabled={isBusy}
+            onClick={() =>
+              void runAction({
+                action: "toggle-format-voting",
+                formatVotingOpen: !state.settings?.formatVotingOpen,
+              })
+            }
+          >
+            {state.settings?.formatVotingOpen
+              ? "Закрыть голосование за формат"
+              : "Открыть голосование за формат"}
           </button>
           <button
             type="button"
@@ -192,6 +228,73 @@ export default function AdminPage() {
             Выйти
           </button>
         </div>
+
+        <article className="panel" style={{ marginBottom: "1rem" }}>
+          <h2>Голосование за формат</h2>
+          <p className="field__hint" style={{ marginTop: "0.5rem" }}>
+            Страница для участников:{" "}
+            <Link href="/vote">/vote</Link>. Сейчас:{" "}
+            {state.settings?.formatVotingOpen ? "открыто" : "закрыто"}. Голосов:{" "}
+            {state.formatPoll?.totalVotes ?? 0}.
+          </p>
+          <div className="format-admin__counts" style={{ marginTop: "1rem" }}>
+            {TOURNAMENT_FORMATS.map((format) => {
+              const voteCount = state.formatPoll?.counts?.[format.id] ?? 0;
+              const formatVotes =
+                state.formatPoll?.votes.filter(
+                  (vote) => vote.formatId === format.id,
+                ) || [];
+
+              return (
+                <div key={format.id} className="format-admin__block">
+                  <div className="format-admin__row">
+                    <span>{format.shortLabel}</span>
+                    <strong>{voteCount}</strong>
+                    <span className="muted">{format.title}</span>
+                  </div>
+                  {formatVotes.length > 0 ? (
+                    <ul className="format-admin__voters">
+                      {formatVotes.map((vote) => (
+                        <li key={vote.id}>
+                          {formatPublicName(vote.voterName, vote.isConfirmed)}
+                          {vote.teamName ? ` · ${vote.teamName}` : ""}
+                          <span className="muted">
+                            {" "}
+                            · {vote.isConfirmed ? "справочник" : "вручную"}
+                            {vote.department ? ` · ${vote.department}` : ""}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+          <div className="hero__actions" style={{ marginTop: "1rem" }}>
+            <Link href="/vote" className="button button--ghost">
+              Открыть страницу голосования
+            </Link>
+            <button
+              type="button"
+              className="button button--ghost"
+              disabled={isBusy || !(state.formatPoll?.totalVotes ?? 0)}
+              onClick={() => {
+                const isConfirmed = window.confirm(
+                  "Сбросить все голоса за формат?",
+                );
+
+                if (!isConfirmed) {
+                  return;
+                }
+
+                void runAction({ action: "clear-format-votes" });
+              }}
+            >
+              Сбросить голоса
+            </button>
+          </div>
+        </article>
 
         <article className="panel">
           <h2>Команды</h2>

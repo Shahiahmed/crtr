@@ -13,6 +13,25 @@ import {
   saveTournament,
   toPublicTeam,
 } from "@/lib/db";
+import { TOURNAMENT_FORMATS, isTournamentFormatId } from "@/lib/formats";
+
+function buildFormatVoteCounts(
+  votes: Array<{ formatId: string }>,
+): Record<string, number> {
+  const counts: Record<string, number> = {};
+
+  for (const format of TOURNAMENT_FORMATS) {
+    counts[format.id] = 0;
+  }
+
+  for (const vote of votes) {
+    if (isTournamentFormatId(vote.formatId)) {
+      counts[vote.formatId] += 1;
+    }
+  }
+
+  return counts;
+}
 
 export async function GET() {
   const isAuthenticated = await isAdminAuthenticated();
@@ -30,6 +49,41 @@ export async function GET() {
       manageToken: team.manageToken,
     })),
     bracket: tournament.bracket,
+    formatPoll: {
+      totalVotes: tournament.formatPoll.votes.length,
+      counts: buildFormatVoteCounts(tournament.formatPoll.votes),
+      votes: tournament.formatPoll.votes.map((vote) => {
+        const liveTeamName =
+          tournament.teams.find((team) =>
+            team.members.some((member) => {
+              if (
+                vote.employeeId &&
+                member.employeeId &&
+                vote.employeeId === member.employeeId
+              ) {
+                return true;
+              }
+
+              return (
+                member.fullName.trim().toLocaleLowerCase("ru-RU") ===
+                vote.voterName.trim().toLocaleLowerCase("ru-RU")
+              );
+            }),
+          )?.name ||
+          vote.teamName ||
+          "";
+
+        return {
+          id: vote.id,
+          voterName: vote.voterName,
+          department: vote.department || "",
+          isConfirmed: Boolean(vote.isConfirmed),
+          teamName: liveTeamName,
+          formatId: vote.formatId,
+          createdAt: vote.createdAt,
+        };
+      }),
+    },
   });
 }
 
@@ -40,6 +94,7 @@ export async function POST(request: Request) {
       username?: string;
       password?: string;
       registrationOpen?: boolean;
+      formatVotingOpen?: boolean;
       matchId?: string;
       winnerId?: string;
       teamId?: string;
@@ -85,6 +140,24 @@ export async function POST(request: Request) {
       tournament.settings.registrationOpen = Boolean(body.registrationOpen);
       await saveTournament(tournament);
       return NextResponse.json({ settings: tournament.settings });
+    }
+
+    if (body.action === "toggle-format-voting") {
+      tournament.settings.formatVotingOpen = Boolean(body.formatVotingOpen);
+      await saveTournament(tournament);
+      return NextResponse.json({ settings: tournament.settings });
+    }
+
+    if (body.action === "clear-format-votes") {
+      tournament.formatPoll.votes = [];
+      await saveTournament(tournament);
+      return NextResponse.json({
+        formatPoll: {
+          totalVotes: 0,
+          counts: buildFormatVoteCounts([]),
+          votes: [],
+        },
+      });
     }
 
     if (body.action === "draw") {

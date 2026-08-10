@@ -1,7 +1,7 @@
 /**
- * Public display: "Саяжан Е." — first name + surname initial.
+ * Public display: "Шаһиахмед А." — first name + surname initial.
  * Directory order: Surname FirstName [Patronymic]
- * Manual order: FirstName Surname
+ * Manual order: FirstName Surname [Patronymic]
  */
 export function formatPublicName(
   fullName: string,

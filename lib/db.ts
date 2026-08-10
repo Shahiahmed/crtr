@@ -32,20 +32,44 @@ function createEmptyTournament(): TournamentData {
       registrationOpen: true,
       tournamentName: "ЦРТР CS Tournament",
       companyName: "АО «ЦРТР»",
+      formatVotingOpen: false,
+    },
+    formatPoll: {
+      votes: [],
     },
   };
 }
 
 function normalizeTournament(data: TournamentData): TournamentData {
+  const emptyTournament = createEmptyTournament();
+
   return {
-    ...createEmptyTournament(),
+    ...emptyTournament,
     ...data,
     teams: Array.isArray(data.teams) ? data.teams : [],
     legionnaires: Array.isArray(data.legionnaires) ? data.legionnaires : [],
     bracket: data.bracket ?? null,
     settings: {
-      ...createEmptyTournament().settings,
+      ...emptyTournament.settings,
       ...(data.settings || {}),
+      formatVotingOpen: Boolean(
+        data.settings?.formatVotingOpen ?? emptyTournament.settings.formatVotingOpen,
+      ),
+    },
+    formatPoll: {
+      votes: Array.isArray(data.formatPoll?.votes)
+        ? data.formatPoll.votes.map((vote) => ({
+            id: vote.id,
+            voterKey: vote.voterKey,
+            voterName: vote.voterName,
+            department: vote.department || "",
+            employeeId: vote.employeeId ?? null,
+            isConfirmed: Boolean(vote.isConfirmed),
+            teamName: vote.teamName || "",
+            formatId: vote.formatId,
+            createdAt: vote.createdAt,
+          }))
+        : [],
     },
   };
 }
@@ -210,13 +234,27 @@ export async function isPersonAlreadyRegistered(
   fullName: string,
   employeeId: string | null,
 ): Promise<boolean> {
+  const membership = await findTeamMembership(fullName, employeeId);
+  return membership !== null;
+}
+
+export async function findTeamMembership(
+  fullName: string,
+  employeeId: string | null,
+): Promise<{ teamId: string; teamName: string } | null> {
   const tournament = await getTournament();
 
-  return tournament.teams.some((team) =>
-    team.members.some((member) =>
+  for (const team of tournament.teams) {
+    const isMember = team.members.some((member) =>
       isSamePerson(fullName, employeeId, member.fullName, member.employeeId),
-    ),
-  );
+    );
+
+    if (isMember) {
+      return { teamId: team.id, teamName: team.name };
+    }
+  }
+
+  return null;
 }
 
 export async function isPersonLegionnaire(

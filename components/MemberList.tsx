@@ -1,5 +1,6 @@
 "use client";
 
+import { formatPublicName } from "@/lib/names";
 import type { TeamMember } from "@/lib/types";
 
 type StatusBadgeProps = {
@@ -20,7 +21,11 @@ type MemberListProps = {
   onRemove?: (memberId: string) => void;
 };
 
-export function MemberList({ members, showActions = false, onRemove }: MemberListProps) {
+export function MemberList({
+  members,
+  showActions = false,
+  onRemove,
+}: MemberListProps) {
   if (members.length === 0) {
     return <p className="empty-note">Пока никого нет</p>;
   }
@@ -31,7 +36,9 @@ export function MemberList({ members, showActions = false, onRemove }: MemberLis
         <li key={member.id} className="member-list__item">
           <div>
             <div className="member-list__top">
-              <strong>{member.fullName}</strong>
+              <strong>
+                {formatPublicName(member.fullName, member.isConfirmed)}
+              </strong>
               <StatusBadge isConfirmed={member.isConfirmed} />
             </div>
             <p>{member.department}</p>
