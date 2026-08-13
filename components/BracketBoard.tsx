@@ -243,8 +243,8 @@ function RoundRobinBoard({
       <div className="bracket-group">
         <h3 className="bracket-group__title">Общая таблица</h3>
         <p className="field__hint" style={{ marginBottom: "0.75rem" }}>
-          Топ-2 → финал. 3–4 место → матч за бронзу. Максимум 2 матча в туре
-          (2 сервера).
+          Туры — BO1 (одна карта). Топ-2 → финал BO3, 3–4 место → матч за
+          бронзу BO3. Максимум 2 матча в туре (2 сервера).
         </p>
 
         <table className="standings">
@@ -383,7 +383,7 @@ export default function BracketBoard({
           <div className="bracket" style={{ marginTop: "1.25rem" }}>
             <div className="bracket__rounds">
               <StageColumn
-                title={getStageLabel("final")}
+                title={getStageLabel("final", { seriesLabel: "BO3" })}
                 matches={finals}
                 teamsById={teamsById}
                 interactive={interactive}
@@ -391,7 +391,7 @@ export default function BracketBoard({
                 onSelectWinner={onSelectWinner}
               />
               <StageColumn
-                title={getStageLabel("third_place")}
+                title={getStageLabel("third_place", { seriesLabel: "BO3" })}
                 matches={thirdPlace}
                 teamsById={teamsById}
                 interactive={interactive}

@@ -616,25 +616,30 @@ export function applyMatchWinner(
   }
 }
 
-export function getStageLabel(stage: MatchStage): string {
+export function getStageLabel(
+  stage: MatchStage,
+  options?: { seriesLabel?: string },
+): string {
+  let label = "Финал";
+
   if (stage === "group") {
-    return "Группа";
+    label = "Группа";
+  } else if (stage === "semifinal") {
+    label = "Полуфинал";
+  } else if (stage === "third_place") {
+    label = "За 3 место";
   }
 
-  if (stage === "semifinal") {
-    return "Полуфинал";
+  if (options?.seriesLabel) {
+    return `${label} · ${options.seriesLabel}`;
   }
 
-  if (stage === "third_place") {
-    return "За 3 место";
-  }
-
-  return "Финал";
+  return label;
 }
 
 export function getBracketFormatLabel(format: Bracket["format"]): string {
   if (format === "round_robin") {
-    return "каждый с каждым → финал топ-2";
+    return "каждый с каждым (BO1) → финал и матч за 3-е (BO3)";
   }
 
   return "группы → полуфинал → финал и матч за 3 место";
