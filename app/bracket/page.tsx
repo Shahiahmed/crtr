@@ -1,5 +1,6 @@
 import BracketBoard from "@/components/BracketBoard";
 import PrizePodium from "@/components/PrizePodium";
+import { getBracketFormatLabel } from "@/lib/bracket";
 import { getTournament, toPublicTeam } from "@/lib/db";
 import type { Bracket } from "@/lib/types";
 
@@ -74,8 +75,9 @@ export default async function BracketPage() {
           <PrizePodium />
           <h1 className="section__title">Сетка турнира</h1>
           <p className="section__text">
-            Формат: группы + плей-офф. Жеребьёвка ещё не запускалась. Админ
-            запускает её, когда готовы минимум 2 команды с составом 5/5.
+            Жеребьёвка ещё не запускалась. В админке можно выбрать формат:
+            группы + плей-офф или вариант C (каждый с каждым, 2 сервера).
+            Нужно минимум 2 команды с составом 5/5.
           </p>
         </section>
       </main>
@@ -101,8 +103,8 @@ export default async function BracketPage() {
             timeStyle: "short",
             timeZone: "Asia/Almaty",
           })}
-          . Участвует команд: {bracket.teamIds.length}. Формат: группы →
-          полуфинал → финал и матч за 3 место.
+          . Участвует команд: {bracket.teamIds.length}. Формат:{" "}
+          {getBracketFormatLabel(bracket.format)}.
         </p>
 
         <BracketBoard bracket={bracket} teams={teams} />

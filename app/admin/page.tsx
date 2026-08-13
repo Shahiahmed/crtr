@@ -224,17 +224,41 @@ export default function AdminPage() {
             disabled={isBusy}
             onClick={() => {
               const isConfirmed = window.confirm(
-                "Запустить жеребьёвку? Будут созданы группы и сетка плей-офф. Текущая сетка сбросится.",
+                "Запустить жеребьёвку (группы + плей-офф)? Текущая сетка сбросится.",
               );
 
               if (!isConfirmed) {
                 return;
               }
 
-              void runAction({ action: "draw" });
+              void runAction({
+                action: "draw",
+                bracketFormat: "groups_playoff",
+              });
             }}
           >
-            Запустить жеребьёвку
+            Жеребьёвка: группы
+          </button>
+          <button
+            type="button"
+            className="button button--teal"
+            disabled={isBusy}
+            onClick={() => {
+              const isConfirmed = window.confirm(
+                "Запустить вариант C (каждый с каждым, макс. 2 сервера) + финал топ-2? Текущая сетка сбросится.",
+              );
+
+              if (!isConfirmed) {
+                return;
+              }
+
+              void runAction({
+                action: "draw",
+                bracketFormat: "round_robin",
+              });
+            }}
+          >
+            Жеребьёвка: вариант C
           </button>
           <button
             type="button"
@@ -382,8 +406,9 @@ export default function AdminPage() {
           <article className="panel" style={{ marginTop: "1rem" }}>
             <h2>Сетка — отметить победителя</h2>
             <p className="field__hint" style={{ marginTop: "0.5rem" }}>
-              Сначала сыграйте групповые матчи. Когда группа завершена, топ-2
-              попадут в плей-офф автоматически.
+              {state.bracket.format === "round_robin"
+                ? "Вариант C: сыграйте туры круговой. Когда все матчи туров завершены, топ-2 попадут в финал, 3–4 — в матч за 3 место."
+                : "Сначала сыграйте групповые матчи. Когда группа завершена, топ-2 попадут в плей-офф автоматически."}
             </p>
             <div style={{ marginTop: "1rem" }}>
               <BracketBoard

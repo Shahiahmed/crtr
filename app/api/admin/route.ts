@@ -6,7 +6,12 @@ import {
   isAdminAuthenticated,
   verifyAdminCredentials,
 } from "@/lib/auth";
-import { applyMatchWinner, buildBracket } from "@/lib/bracket";
+import {
+  applyMatchWinner,
+  buildBracket,
+  buildRoundRobinBracket,
+  isSupportedBracket,
+} from "@/lib/bracket";
 import {
   getTournament,
   isTeamReady,
@@ -100,6 +105,7 @@ export async function POST(request: Request) {
       matchId?: string;
       winnerId?: string;
       teamId?: string;
+      bracketFormat?: "groups_playoff" | "round_robin";
     };
 
     if (body.action === "login") {
@@ -185,7 +191,15 @@ export async function POST(request: Request) {
         );
       }
 
-      tournament.bracket = buildBracket(readyTeams.map((team) => team.id));
+      const readyTeamIds = readyTeams.map((team) => team.id);
+      const bracketFormat =
+        body.bracketFormat === "round_robin" ? "round_robin" : "groups_playoff";
+
+      tournament.bracket =
+        bracketFormat === "round_robin"
+          ? buildRoundRobinBracket(readyTeamIds)
+          : buildBracket(readyTeamIds);
+
       await saveTournament(tournament);
 
       return NextResponse.json({ bracket: tournament.bracket });
@@ -206,7 +220,7 @@ export async function POST(request: Request) {
         );
       }
 
-      if ((tournament.bracket as { format?: string }).format !== "groups_playoff") {
+      if (!isSupportedBracket(tournament.bracket)) {
         return NextResponse.json(
           { error: "Старая сетка. Запустите жеребьёвку заново." },
           { status: 400 },

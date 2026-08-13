@@ -188,6 +188,139 @@ export function buildBracket(teamIds: string[]): Bracket {
   };
 }
 
+function buildAllPairs(teamIds: string[]): Array<[string, string]> {
+  const pairs: Array<[string, string]> = [];
+
+  for (let leftIndex = 0; leftIndex < teamIds.length; leftIndex += 1) {
+    for (
+      let rightIndex = leftIndex + 1;
+      rightIndex < teamIds.length;
+      rightIndex += 1
+    ) {
+      pairs.push([teamIds[leftIndex], teamIds[rightIndex]]);
+    }
+  }
+
+  return pairs;
+}
+
+/** Pack pairs into rounds with at most `maxParallel` matches and no team twice. */
+function packMatchesIntoRounds(
+  pairs: Array<[string, string]>,
+  maxParallel: number,
+): Array<Array<[string, string]>> {
+  const remainingPairs = [...pairs];
+  const rounds: Array<Array<[string, string]>> = [];
+
+  while (remainingPairs.length > 0) {
+    const roundPairs: Array<[string, string]> = [];
+    const usedTeamIds = new Set<string>();
+    let pairIndex = 0;
+
+    while (
+      pairIndex < remainingPairs.length &&
+      roundPairs.length < maxParallel
+    ) {
+      const [leftTeamId, rightTeamId] = remainingPairs[pairIndex];
+
+      if (!usedTeamIds.has(leftTeamId) && !usedTeamIds.has(rightTeamId)) {
+        roundPairs.push(remainingPairs[pairIndex]);
+        usedTeamIds.add(leftTeamId);
+        usedTeamIds.add(rightTeamId);
+        remainingPairs.splice(pairIndex, 1);
+        continue;
+      }
+
+      pairIndex += 1;
+    }
+
+    if (roundPairs.length === 0) {
+      roundPairs.push(remainingPairs.shift()!);
+    }
+
+    rounds.push(roundPairs);
+  }
+
+  return rounds;
+}
+
+/**
+ * Format C: everyone plays everyone, max 2 matches in parallel (2 servers),
+ * then final (1st vs 2nd) and optional 3rd place (3rd vs 4th).
+ */
+export function buildRoundRobinBracket(teamIds: string[]): Bracket {
+  if (teamIds.length < 2) {
+    throw new Error("Нужно минимум 2 команды для жеребьёвки");
+  }
+
+  const shuffledTeamIds = shuffleTeamIds(teamIds);
+  const pairs = buildAllPairs(shuffledTeamIds);
+  const rounds = packMatchesIntoRounds(pairs, 2);
+  const matches: BracketMatch[] = [];
+
+  rounds.forEach((roundPairs, roundIndex) => {
+    roundPairs.forEach(([teamAId, teamBId], position) => {
+      matches.push(
+        createMatch({
+          stage: "group",
+          groupId: "A",
+          round: roundIndex + 1,
+          position,
+          teamAId,
+          teamBId,
+        }),
+      );
+    });
+  });
+
+  if (shuffledTeamIds.length === 2) {
+    return {
+      format: "round_robin",
+      createdAt: new Date().toISOString(),
+      teamIds: shuffledTeamIds,
+      groups: [{ id: "A", teamIds: shuffledTeamIds }],
+      matches: [
+        createMatch({
+          stage: "final",
+          groupId: null,
+          round: 1,
+          position: 0,
+          teamAId: shuffledTeamIds[0],
+          teamBId: shuffledTeamIds[1],
+        }),
+      ],
+    };
+  }
+
+  matches.push(
+    createMatch({
+      stage: "final",
+      groupId: null,
+      round: rounds.length + 1,
+      position: 0,
+    }),
+  );
+
+  if (shuffledTeamIds.length >= 4) {
+    matches.push(
+      createMatch({
+        stage: "third_place",
+        groupId: null,
+        round: rounds.length + 1,
+        position: 1,
+      }),
+    );
+  }
+
+  return {
+    format: "round_robin",
+    createdAt: new Date().toISOString(),
+    teamIds: shuffledTeamIds,
+    groups: [{ id: "A", teamIds: [...shuffledTeamIds] }],
+    matches,
+  };
+}
+
 function getMatchLoser(match: BracketMatch): string | null {
   if (!match.winnerId) {
     return null;
@@ -499,10 +632,27 @@ export function getStageLabel(stage: MatchStage): string {
   return "Финал";
 }
 
+export function getBracketFormatLabel(format: Bracket["format"]): string {
+  if (format === "round_robin") {
+    return "каждый с каждым → финал топ-2";
+  }
+
+  return "группы → полуфинал → финал и матч за 3 место";
+}
+
+export function isSupportedBracket(bracket: Bracket | null | undefined): boolean {
+  if (!bracket) {
+    return false;
+  }
+
+  const format = (bracket as { format?: string }).format;
+  return format === "groups_playoff" || format === "round_robin";
+}
+
 export function isLegacyBracket(bracket: Bracket | null | undefined): boolean {
   if (!bracket) {
     return false;
   }
 
-  return (bracket as { format?: string }).format !== "groups_playoff";
+  return !isSupportedBracket(bracket);
 }

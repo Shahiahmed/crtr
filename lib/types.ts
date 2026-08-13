@@ -24,6 +24,8 @@ export type MatchStage = "group" | "semifinal" | "final" | "third_place";
 
 export type BracketGroupId = "A" | "B";
 
+export type BracketFormat = "groups_playoff" | "round_robin";
+
 export type BracketMatch = {
   id: string;
   stage: MatchStage;
@@ -41,7 +43,7 @@ export type BracketGroup = {
 };
 
 export type Bracket = {
-  format: "groups_playoff";
+  format: BracketFormat;
   createdAt: string;
   teamIds: string[];
   groups: BracketGroup[];
