@@ -86,7 +86,7 @@ export default async function BracketPage() {
           <h1 className="section__title">Сетка турнира</h1>
           <p className="section__text">
             Жеребьёвка ещё не запускалась. В админке можно выбрать формат:
-            группы + плей-офф или вариант C (каждый с каждым, 2 сервера).
+            группы + плей-офф или вариант C (каждый с каждым, 2 или 3 сервера).
             Нужно минимум 2 команды с составом 5/5.
           </p>
         </section>
@@ -114,7 +114,7 @@ export default async function BracketPage() {
             timeZone: "Asia/Almaty",
           })}
           . Участвует команд: {bracket.teamIds.length}. Формат:{" "}
-          {getBracketFormatLabel(bracket.format)}.
+          {getBracketFormatLabel(bracket.format, bracket.maxParallel)}.
         </p>
 
         <BracketBoard bracket={bracket} teams={teams} />

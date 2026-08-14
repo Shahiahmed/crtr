@@ -106,6 +106,7 @@ export async function POST(request: Request) {
       winnerId?: string;
       teamId?: string;
       bracketFormat?: "groups_playoff" | "round_robin";
+      maxParallel?: number;
     };
 
     if (body.action === "login") {
@@ -194,10 +195,11 @@ export async function POST(request: Request) {
       const readyTeamIds = readyTeams.map((team) => team.id);
       const bracketFormat =
         body.bracketFormat === "round_robin" ? "round_robin" : "groups_playoff";
+      const maxParallel = body.maxParallel === 3 ? 3 : 2;
 
       tournament.bracket =
         bracketFormat === "round_robin"
-          ? buildRoundRobinBracket(readyTeamIds)
+          ? buildRoundRobinBracket(readyTeamIds, maxParallel)
           : buildBracket(readyTeamIds);
 
       await saveTournament(tournament);

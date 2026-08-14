@@ -48,6 +48,8 @@ export type Bracket = {
   teamIds: string[];
   groups: BracketGroup[];
   matches: BracketMatch[];
+  /** Round-robin only: max parallel matches per tour (2 or 3 servers). */
+  maxParallel?: number;
 };
 
 export type GroupStanding = {

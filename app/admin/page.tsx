@@ -245,7 +245,7 @@ export default function AdminPage() {
             disabled={isBusy}
             onClick={() => {
               const isConfirmed = window.confirm(
-                "Запустить вариант C? Круговая BO1 (макс. 2 сервера), затем только финал топ-2 — BO3. Матча за 3 место нет. Текущая сетка сбросится.",
+                "Запустить вариант C на 2 серверах? Круговая BO1 (макс. 2 матча в туре), финал топ-2 — BO3. Текущая сетка сбросится.",
               );
 
               if (!isConfirmed) {
@@ -255,10 +255,33 @@ export default function AdminPage() {
               void runAction({
                 action: "draw",
                 bracketFormat: "round_robin",
+                maxParallel: 2,
               });
             }}
           >
-            Жеребьёвка: вариант C
+            C · 2 сервера
+          </button>
+          <button
+            type="button"
+            className="button button--teal"
+            disabled={isBusy}
+            onClick={() => {
+              const isConfirmed = window.confirm(
+                "Запустить вариант C на 3 серверах? Круговая BO1 (до 3 матчей в туре, все команды играют), финал топ-2 — BO3. Текущая сетка сбросится.",
+              );
+
+              if (!isConfirmed) {
+                return;
+              }
+
+              void runAction({
+                action: "draw",
+                bracketFormat: "round_robin",
+                maxParallel: 3,
+              });
+            }}
+          >
+            C · 3 сервера
           </button>
           <button
             type="button"
@@ -407,7 +430,7 @@ export default function AdminPage() {
             <h2>Сетка — отметить победителя</h2>
             <p className="field__hint" style={{ marginTop: "0.5rem" }}>
               {state.bracket.format === "round_robin"
-                ? "Вариант C: туры круговой — BO1. Когда все туры сыграны, топ-2 идут в финал BO3. Матча за 3 место нет — бронза по таблице."
+                ? `Вариант C: туры круговой — BO1 (до ${state.bracket.maxParallel === 3 ? 3 : 2} матчей в туре). Когда все туры сыграны, топ-2 идут в финал BO3. Матча за 3 место нет — бронза по таблице.`
                 : "Сначала сыграйте групповые матчи. Когда группа завершена, топ-2 попадут в плей-офф автоматически."}
             </p>
             <div style={{ marginTop: "1rem" }}>

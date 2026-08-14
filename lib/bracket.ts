@@ -245,17 +245,22 @@ function packMatchesIntoRounds(
 }
 
 /**
- * Format C: everyone plays everyone, max 2 matches in parallel (2 servers),
- * then final (1st vs 2nd) and optional 3rd place (3rd vs 4th).
+ * Format C: everyone plays everyone.
+ * maxParallel 2 = two servers; 3 = three servers (all teams can play each tour).
+ * Then final (1st vs 2nd) as BO3 — no 3rd-place match.
  */
-export function buildRoundRobinBracket(teamIds: string[]): Bracket {
+export function buildRoundRobinBracket(
+  teamIds: string[],
+  maxParallel: number = 2,
+): Bracket {
   if (teamIds.length < 2) {
     throw new Error("Нужно минимум 2 команды для жеребьёвки");
   }
 
+  const parallelLimit = maxParallel >= 3 ? 3 : 2;
   const shuffledTeamIds = shuffleTeamIds(teamIds);
   const pairs = buildAllPairs(shuffledTeamIds);
-  const rounds = packMatchesIntoRounds(pairs, 2);
+  const rounds = packMatchesIntoRounds(pairs, parallelLimit);
   const matches: BracketMatch[] = [];
 
   rounds.forEach((roundPairs, roundIndex) => {
@@ -289,6 +294,7 @@ export function buildRoundRobinBracket(teamIds: string[]): Bracket {
           teamBId: shuffledTeamIds[1],
         }),
       ],
+      maxParallel: parallelLimit,
     };
   }
 
@@ -307,6 +313,7 @@ export function buildRoundRobinBracket(teamIds: string[]): Bracket {
     teamIds: shuffledTeamIds,
     groups: [{ id: "A", teamIds: [...shuffledTeamIds] }],
     matches,
+    maxParallel: parallelLimit,
   };
 }
 
@@ -630,9 +637,10 @@ export function getStageLabel(
   return label;
 }
 
-export function getBracketFormatLabel(format: Bracket["format"]): string {
+export function getBracketFormatLabel(format: Bracket["format"], maxParallel?: number): string {
   if (format === "round_robin") {
-    return "каждый с каждым (BO1) → финал топ-2 (BO3)";
+    const servers = maxParallel === 3 ? "3 сервера" : "2 сервера";
+    return `каждый с каждым (BO1, ${servers}) → финал топ-2 (BO3)`;
   }
 
   return "группы → полуфинал → финал и матч за 3 место";

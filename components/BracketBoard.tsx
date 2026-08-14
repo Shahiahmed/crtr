@@ -223,12 +223,14 @@ function RoundRobinBoard({
   interactive,
   isBusy,
   onSelectWinner,
+  maxParallel,
 }: {
   bracket: Bracket;
   teamsById: Map<string, TeamInfo>;
   interactive?: boolean;
   isBusy?: boolean;
   onSelectWinner?: (matchId: string, winnerId: string) => void;
+  maxParallel: number;
 }) {
   const standings = getGroupStandings(bracket, "A");
   const groupMatches = bracket.matches.filter(
@@ -244,7 +246,8 @@ function RoundRobinBoard({
         <h3 className="bracket-group__title">Общая таблица</h3>
         <p className="field__hint" style={{ marginBottom: "0.75rem" }}>
           Туры — BO1 (одна карта). Топ-2 → финал BO3. Матча за 3 место нет:
-          бронза по таблице. Максимум 2 матча в туре (2 сервера).
+          бронза по таблице. В туре до {maxParallel} матчей ({maxParallel}{" "}
+          сервера).
         </p>
 
         <table className="standings">
@@ -364,7 +367,8 @@ export default function BracketBoard({
     return (
       <div className="bracket-board">
         <p className="field__hint" style={{ marginBottom: "1rem" }}>
-          Формат: {getBracketFormatLabel(bracket.format)}
+          Формат:{" "}
+          {getBracketFormatLabel(bracket.format, bracket.maxParallel)}
         </p>
         <RoundRobinBoard
           bracket={bracket}
@@ -372,6 +376,7 @@ export default function BracketBoard({
           interactive={interactive}
           isBusy={isBusy}
           onSelectWinner={onSelectWinner}
+          maxParallel={bracket.maxParallel === 3 ? 3 : 2}
         />
         {playoffMatches.length > 0 ? (
           <div className="bracket" style={{ marginTop: "1.25rem" }}>
