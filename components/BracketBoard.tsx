@@ -243,8 +243,8 @@ function RoundRobinBoard({
       <div className="bracket-group">
         <h3 className="bracket-group__title">Общая таблица</h3>
         <p className="field__hint" style={{ marginBottom: "0.75rem" }}>
-          Туры — BO1 (одна карта). Топ-2 → финал BO3, 3–4 место → матч за
-          бронзу BO3. Максимум 2 матча в туре (2 сервера).
+          Туры — BO1 (одна карта). Топ-2 → финал BO3. Матча за 3 место нет:
+          бронза по таблице. Максимум 2 матча в туре (2 сервера).
         </p>
 
         <table className="standings">
@@ -264,13 +264,7 @@ function RoundRobinBoard({
               return (
                 <tr
                   key={standing.teamId}
-                  className={
-                    standing.place <= 2
-                      ? "is-qualify"
-                      : standing.place <= 4
-                        ? "is-bronze-zone"
-                        : undefined
-                  }
+                  className={standing.place <= 2 ? "is-qualify" : undefined}
                 >
                   <td>{standing.place}</td>
                   <td>{team?.name || standing.teamId}</td>
@@ -385,14 +379,6 @@ export default function BracketBoard({
               <StageColumn
                 title={getStageLabel("final", { seriesLabel: "BO3" })}
                 matches={finals}
-                teamsById={teamsById}
-                interactive={interactive}
-                isBusy={isBusy}
-                onSelectWinner={onSelectWinner}
-              />
-              <StageColumn
-                title={getStageLabel("third_place", { seriesLabel: "BO3" })}
-                matches={thirdPlace}
                 teamsById={teamsById}
                 interactive={interactive}
                 isBusy={isBusy}

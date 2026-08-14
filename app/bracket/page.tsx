@@ -1,6 +1,9 @@
 import BracketBoard from "@/components/BracketBoard";
 import PrizePodium from "@/components/PrizePodium";
-import { getBracketFormatLabel } from "@/lib/bracket";
+import {
+  getBracketFormatLabel,
+  getGroupStandings,
+} from "@/lib/bracket";
 import { getTournament, toPublicTeam } from "@/lib/db";
 import type { Bracket } from "@/lib/types";
 
@@ -50,7 +53,14 @@ function getPodiumNames(
   const secondPlaceName = championName
     ? getTeamNameById(teams, finalMatch ? getMatchLoserId(finalMatch) : null)
     : null;
-  const thirdPlaceName = getTeamNameById(teams, thirdPlaceMatch?.winnerId);
+
+  let thirdPlaceName = getTeamNameById(teams, thirdPlaceMatch?.winnerId);
+
+  // Round robin has no 3rd-place match: bronze is 3rd in the table.
+  if (!thirdPlaceName && bracket.format === "round_robin") {
+    const standings = getGroupStandings(bracket, "A");
+    thirdPlaceName = getTeamNameById(teams, standings[2]?.teamId);
+  }
 
   return { championName, secondPlaceName, thirdPlaceName };
 }

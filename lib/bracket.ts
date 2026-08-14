@@ -301,17 +301,6 @@ export function buildRoundRobinBracket(teamIds: string[]): Bracket {
     }),
   );
 
-  if (shuffledTeamIds.length >= 4) {
-    matches.push(
-      createMatch({
-        stage: "third_place",
-        groupId: null,
-        round: rounds.length + 1,
-        position: 1,
-      }),
-    );
-  }
-
   return {
     format: "round_robin",
     createdAt: new Date().toISOString(),
@@ -500,7 +489,7 @@ function seedPlayoffs(bracket: Bracket): void {
     return;
   }
 
-  if (bracket.groups.length === 1) {
+  if (bracket.format === "round_robin" || bracket.groups.length === 1) {
     const standings = getGroupStandings(bracket, "A");
     const finalMatch = findMatch(bracket, "final");
     const thirdPlaceMatch = findMatch(bracket, "third_place");
@@ -510,7 +499,11 @@ function seedPlayoffs(bracket: Bracket): void {
       finalMatch.teamBId = standings[1].teamId;
     }
 
-    if (thirdPlaceMatch && standings.length >= 4) {
+    if (
+      bracket.format !== "round_robin" &&
+      thirdPlaceMatch &&
+      standings.length >= 4
+    ) {
       thirdPlaceMatch.teamAId = standings[2].teamId;
       thirdPlaceMatch.teamBId = standings[3].teamId;
     }
@@ -639,7 +632,7 @@ export function getStageLabel(
 
 export function getBracketFormatLabel(format: Bracket["format"]): string {
   if (format === "round_robin") {
-    return "каждый с каждым (BO1) → финал и матч за 3-е (BO3)";
+    return "каждый с каждым (BO1) → финал топ-2 (BO3)";
   }
 
   return "группы → полуфинал → финал и матч за 3 место";
