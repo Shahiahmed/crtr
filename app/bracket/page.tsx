@@ -20,6 +20,20 @@ function getTeamNameById(
   return teams.find((team) => team.id === teamId)?.name || null;
 }
 
+function resolveTeamDisplayName(
+  teams: Array<{ id: string; name: string }>,
+  preferredName: string,
+  fallbackName?: string | null,
+): string {
+  const matchedTeam = teams.find(
+    (team) =>
+      team.name.trim().toLocaleLowerCase("ru-RU") ===
+      preferredName.trim().toLocaleLowerCase("ru-RU"),
+  );
+
+  return matchedTeam?.name || preferredName || fallbackName || preferredName;
+}
+
 function getMatchLoserId(match: {
   teamAId: string | null;
   teamBId: string | null;
@@ -82,19 +96,36 @@ export default async function BracketPage() {
     return (
       <main className="page">
         <section className="section">
-          <PrizePodium />
+          <PrizePodium
+            championName="Nomads"
+            secondPlaceName="ForeverYoung"
+            thirdPlaceName="0.5 K/D"
+          />
           <h1 className="section__title">Сетка турнира</h1>
           <p className="section__text">
-            Жеребьёвка ещё не запускалась. В админке можно выбрать формат:
-            группы + плей-офф или вариант C (каждый с каждым, 2 или 3 сервера).
-            Нужно минимум 2 команды с составом 5/5.
+            Турнир завершён. Жеребьёвка на сайте сейчас не отображается.
           </p>
         </section>
       </main>
     );
   }
 
-  const podium = getPodiumNames(bracket, teams);
+  const podiumFromBracket = getPodiumNames(bracket, teams);
+
+  // Official results after the tournament.
+  const podium = {
+    championName: resolveTeamDisplayName(teams, "Nomads", podiumFromBracket.championName),
+    secondPlaceName: resolveTeamDisplayName(
+      teams,
+      "ForeverYoung",
+      podiumFromBracket.secondPlaceName,
+    ),
+    thirdPlaceName: resolveTeamDisplayName(
+      teams,
+      "0.5 K/D",
+      podiumFromBracket.thirdPlaceName,
+    ),
+  };
 
   return (
     <main className="page">

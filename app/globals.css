@@ -466,10 +466,12 @@ select {
 }
 
 .prizes__team {
-  max-width: 7.5rem;
-  margin-top: 0.1rem;
+  max-width: 9rem;
+  margin-top: 0.25rem;
   color: var(--text);
-  font-size: 0.78rem;
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
   line-height: 1.25;
   overflow: hidden;
   text-overflow: ellipsis;
