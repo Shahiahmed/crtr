@@ -57,6 +57,7 @@ for (const line of lines) {
 
   if (!isNumbered && columnZero && !columnTwo && columnZero.length > 3) {
     if (
+      !hasCyrillic(columnZero) ||
       columnZero.startsWith("Управление") ||
       columnZero.includes("Наименование должностей") ||
       columnZero.includes("п/п")
